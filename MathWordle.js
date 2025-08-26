@@ -1,8 +1,8 @@
 /* ========= Configuration ========= */
 const HEIGHT = 7;             // Number of rows (guesses allowed) = 6
 const WIDTH = 7;              // Equation format: NUM OP NUM OP NUM (7 tokens)
-const targets = [10, 20, 40, 50, 60, 80, 100, 150, 200];  // Possible target values to hit
-const numberPool = [1, 2, 3, 4, 5, 8, 10, 15, 20, 25, 30, 40, 50, 60, 75, 80, 90, 100, 200]; // Available numbers to choose from
+const targets = [10, 20, 40, 50, 60, 80, 100, 150, 200, 250];  // Possible target values to hit
+const numberPool = [1, 2, 3, 4, 5, 8, 10, 15, 20, 25, 30, 40, 50, 60, 75, 80, 90, 100, 150, 200, 250]; // Available numbers to choose from
 const operators = ["+", "-", "*", "/", "**", "%"]; // Allowed operators
 
 /* ========= State ========= */
