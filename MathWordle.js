@@ -1,8 +1,8 @@
 /* ========= Configuration ========= */
 const HEIGHT = 7;             // Number of rows (guesses allowed) = 6
 const WIDTH = 7;              // Equation format: NUM OP NUM OP NUM (7 tokens)
-const targets = [10, 20, 40, 50, 60, 80, 100, 150, 200, 500];  // Possible target values to hit
-const numberPool = [1, 2, 3, 4, 5, 8, 10, 15, 20, 25, 30, 40, 50, 60, 75, 80, 90, 100, 200, 250, 300, 400, 500, 750, 1000]; // Available numbers to choose from
+const targets = [10, 20, 40, 50, 60, 80, 100, 150, 200];  // Possible target values to hit
+const numberPool = [1, 2, 3, 4, 5, 8, 10, 15, 20, 25, 30, 40, 50, 60, 75, 80, 90, 100, 200]; // Available numbers to choose from
 const operators = ["+", "-", "*", "/", "**", "%"]; // Allowed operators
 
 /* ========= State ========= */
@@ -169,6 +169,7 @@ function renderCurrentRow() {
     tile.className = "tile";          // Reset tile style
     tile.innerText = currentTokens[c] ?? ""; // Show token if exists
   }
+
 }
 
 /* ========= Validation & Submit ========= */
@@ -224,6 +225,8 @@ function submitGuess() {
     tile.classList.remove("correct", "present", "absent");
     tile.classList.add(feedback[c]);
   }
+  //Update keypad in respect to the tiles
+  updateKeypadColors(feedback, currentTokens);
 
   const expr = currentTokens.join(""); // Build full expression string
   const allCorrect = feedback.every(x => x === "correct"); // Check win condition
@@ -254,9 +257,58 @@ function submitGuess() {
   }
 }
 
+
+
 function disableKeypad() {
   // Disable all buttons
   document.querySelectorAll(".choice-btn, .op-btn, .action-btn").forEach(b => {
     b.disabled = true;
   });
+}
+
+/**
+ * Updates the colors of keypad buttons (numbers and operators)
+ * based on Wordle-style feedback for the current guess.
+ *
+ * @param {string[]} feedback - Array of states ("correct", "present", "absent") for each token in the guess
+ * @param {string[]} guessTokens - The tokens (numbers/operators) that the player guessed
+ */
+function updateKeypadColors(feedback, guessTokens) {
+  // Loop through each guessed token (number or operator)
+  for (let i = 0; i < guessTokens.length; i++) {
+    const token = guessTokens[i];   // Current token from the guess
+    const state = feedback[i];      // Its corresponding feedback state
+
+    // Select all keypad buttons (both number buttons and operator buttons)
+    const selector = `.choice-btn, .op-btn`;
+    document.querySelectorAll(selector).forEach(btn => {
+      // Only process buttons whose label (inner text) matches the current token
+      if (btn.innerText === token) {
+        
+        // ===== PRIORITY SYSTEM: correct > present > absent =====
+        
+        // If the token is in the correct position (green state)
+        if (state === "correct") {
+          // Remove weaker states ("present" and "absent") if they exist
+          btn.classList.remove("present", "absent");
+          // Mark this button as correct (green)
+          btn.classList.add("correct");
+
+        // If the token is in the secret equation but in a different spot (yellow state)
+        } else if (state === "present" && !btn.classList.contains("correct")) {
+          // Remove "absent" if previously marked
+          btn.classList.remove("absent");
+          // Mark as present (yellow), but only if not already "correct"
+          btn.classList.add("present");
+
+        // If the token is not in the secret equation at all (gray state)
+        } else if (state === "absent" && 
+                   !btn.classList.contains("correct") && 
+                   !btn.classList.contains("present")) {
+          // Only add "absent" if it hasn’t been marked as "correct" or "present" earlier
+          btn.classList.add("absent");
+        }
+      }
+    });
+  }
 }
