@@ -120,3 +120,21 @@ hr {
   color: white; /* White text */
   border-color: #6AAA64; /* Matches the background color */
 }
+
+/* ========== Correct State ========== */
+.choice-btn.correct, .op-btn.correct {
+  background-color: #6aaa64; /* Green background (same as Wordle's correct color) */
+  color: white;              /* White text for strong contrast on green */
+}
+
+/* ========== Present State ========== */
+.choice-btn.present, .op-btn.present {
+  background-color: #c9b458; /* Yellow background (indicates token is in equation but misplaced) */
+  color: white;              /* White text for readability on yellow */
+}
+
+/* ========== Absent State ========== */
+.choice-btn.absent, .op-btn.absent {
+  background-color: #787c7e; /* Gray background (indicates token not in equation at all) */
+  color: white;              /* White text for readability on dark gray */
+}
