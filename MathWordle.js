@@ -1,111 +1,119 @@
 /* ========= Settings ========= */
-// Number of rows (guesses allowed)
-const ROWS = 7;
-// Number of columns: 7 inputs + "=" + result
-const COLS = 9;
+const ROWS = 7; // How many guesses the player can make
+const COLS = 9; // 7 slots for numbers/operators + 1 "=" slot + 1 result slot
 
-// Possible target results
+// Possible target numbers (the goal the player must reach)
 const targets = [10,20,40,50,60,80,100,150,200,250];
 
-// Allowed numbers and operators
+// Numbers that can appear in the puzzle
 const numbers = [1,2,3,4,5,8,10,15,20,25,30,40,50,60,75,80,90,100,150,200,250];
-const ops = ["+","-","*","/","**"];
+
+// Operators the player can use
+const ops = ["+","-","*","/","**"]; // ** means "to the power of"
+
 
 /* ========= Game State ========= */
-// Current row where the player is typing
-let currentRow = 0;
-// The player's current guess tokens
-let guess = [];
-// Secret equation tokens chosen by the computer
-let secret = [];
-// Target result number
-let TARGET;
-// Flag if the game is finished
-let finished = false;
+let currentRow = 0;   // Which row (attempt) the player is currently filling in
+let guess = [];       // What the player has typed so far
+let secret = [];      // The hidden correct answer (numbers + operators)
+let TARGET;           // The goal number the player must reach
+let finished = false; // True if the game is over, false if still playing
+
 
 /* ========= Start Game ========= */
-window.onload = function() {
-  pickSecret(); // Pick a random secret equation
-  document.getElementById("target").innerText = "🎯 Target: " + TARGET; // Show target
-  document.getElementById("choices").innerText = "Pattern: NUM OP NUM OP NUM OP NUM = RESULT"; // Show pattern
-  buildBoard(); // Create the game board
-  buildKeypad(); // Create the keypad
+window.onload = function() { // This runs when the page loads
+  pickSecret(); // Choose a random puzzle
+  document.getElementById("target").innerText = "🎯 Target: " + TARGET; // Show the target number
+  document.getElementById("choices").innerText = "Pattern: NUM OP NUM OP NUM OP NUM = RESULT"; // Show the input pattern
+  buildBoard();  // Make the empty game board
+  buildKeypad(); // Make the number and operator buttons
 };
+
 
 /* ========= Board ========= */
 function buildBoard() {
-  const board = document.getElementById("board"); // Get board area
-  board.style.setProperty("--cols", COLS); // Set number of columns
-  board.innerHTML = ""; // Clear old board
+  const board = document.getElementById("board"); // Get the board area
+  board.style.setProperty("--cols", COLS); // Set the number of columns
+  board.innerHTML = ""; // Clear anything already inside
 
-  // Loop through rows
+  // Make each row and each column
   for (let r = 0; r < ROWS; r++) {
-    // Loop through columns
     for (let c = 0; c < COLS; c++) {
-      // Create a tile (square)
-      const tile = document.createElement("div");
-      tile.id = r + "-" + c; // Give it an ID (row-col)
-      tile.className = "tile"; // Add CSS class
-      board.appendChild(tile); // Add tile to board
+      const tile = document.createElement("div"); // Create a box (tile)
+      tile.id = r + "-" + c; // Give it a unique ID like "0-0", "0-1", etc.
+      tile.className = "tile"; // Give it the tile style
+
+      // If we are in the 8th column, this tile is "="
+      if (c === 7) {
+        tile.innerText = "="; // Put "=" sign inside
+        tile.classList.add("red-tile"); // Make it red
+      }
+
+      // If we are in the 9th column, this tile is for the result
+      if (c === 8) {
+        tile.classList.add("red-tile");      // Make it red
+        tile.classList.add("result-tile");   // Make it wide
+      }
+
+      board.appendChild(tile); // Add the tile to the board
     }
   }
 
-  // Add flip animation CSS
-  addFlipAnimationCSS();
+  addFlipAnimationCSS(); // Add the flip animation style
 
-  // Listen for Enter and Backspace keys
+  // Listen for keyboard keys (Enter = submit, Backspace = delete)
   document.addEventListener("keydown", function(e) {
-    if (finished) return; // Do nothing if game finished
-    if (e.key === "Enter") { e.preventDefault(); submit(); } // Submit on Enter
-    if (e.key === "Backspace") { e.preventDefault(); backspace(); } // Remove last token
+    if (finished) return; // Stop if game is over
+    if (e.key === "Enter") { e.preventDefault(); submit(); }     // Submit guess
+    if (e.key === "Backspace") { e.preventDefault(); backspace(); } // Delete last input
   });
 }
 
+
 /* ========= Keypad ========= */
 function buildKeypad() {
-  // Get number and operator areas
-  const numWrap = document.getElementById("numberChoices");
-  const opWrap = document.getElementById("operatorChoices");
+  const numWrap = document.getElementById("numberChoices");   // Where numbers go
+  const opWrap = document.getElementById("operatorChoices");  // Where operators go
 
-  // Clear old buttons
-  numWrap.innerHTML = "";
+  numWrap.innerHTML = ""; // Clear any old buttons
   opWrap.innerHTML = "";
 
-  // Add number buttons
+  // Make buttons for numbers
   for (let i = 0; i < numbers.length; i++) {
     const btn = makeBtn("choice-btn", numbers[i], function() { add(numbers[i]); });
-    numWrap.appendChild(btn);
+    numWrap.appendChild(btn); // Add the button
   }
 
-  // Add operator buttons
+  // Make buttons for operators
   for (let i = 0; i < ops.length; i++) {
     const btn = makeBtn("op-btn", ops[i], function() { add(ops[i]); });
-    opWrap.appendChild(btn);
+    opWrap.appendChild(btn); // Add the button
   }
 
-  // Set action button events
+  // Make the action buttons work
   document.getElementById("backspaceBtn").onclick = backspace;
   document.getElementById("clearBtn").onclick = clearRow;
   document.getElementById("submitBtn").onclick = submit;
 }
 
-// Function to make a button
+// Function to create a button
 function makeBtn(cls, text, fn) {
-  const btn = document.createElement("button");
-  btn.className = cls; // Set CSS class
-  btn.innerText = text; // Set button text
-  btn.onclick = fn; // Set button click function
-  return btn; // Return button
+  const btn = document.createElement("button"); // Make button
+  btn.className = cls;     // Give it a style
+  btn.innerText = text;    // Show text inside
+  btn.onclick = fn;        // Run function when clicked
+  return btn;              // Return the button
 }
+
 
 /* ========= Secret ========= */
 function pickSecret() {
-  // Pick a random target
-  TARGET = targets[Math.floor(Math.random() * targets.length)];
-  const tries = 50000; // Maximum attempts to generate a valid equation
+  TARGET = targets[Math.floor(Math.random() * targets.length)]; // Pick a random target number
+  const tries = 50000; // Try this many times to find a valid secret
 
+  // Try to find numbers/operators that equal TARGET
   for (let i = 0; i < tries; i++) {
-    // Pick 4 numbers
+    // Pick 4 random numbers
     const nums = [
       numbers[Math.floor(Math.random() * numbers.length)],
       numbers[Math.floor(Math.random() * numbers.length)],
@@ -113,127 +121,116 @@ function pickSecret() {
       numbers[Math.floor(Math.random() * numbers.length)]
     ];
 
-    // Pick 3 operators
+    // Pick 3 random operators
     const opsPicked = [
       ops[Math.floor(Math.random() * ops.length)],
       ops[Math.floor(Math.random() * ops.length)],
       ops[Math.floor(Math.random() * ops.length)]
     ];
 
-    // Build expression as string
+    // Build expression like "10+20*5-2"
     const expr = nums[0] + opsPicked[0] + nums[1] + opsPicked[1] + nums[2] + opsPicked[2] + nums[3];
 
-    // Try to evaluate expression
     try {
-      if (eval(expr) === TARGET) {
-        // Save secret tokens
+      if (eval(expr) === TARGET) { // If it matches target
+        // Save the secret as tokens
         secret = [
           String(nums[0]), opsPicked[0],
           String(nums[1]), opsPicked[1],
           String(nums[2]), opsPicked[2],
           String(nums[3])
         ];
-        return;
+        return; // Done
       }
     } catch {}
   }
 
-  // Fallback secret if none found
+  // If no secret found, fallback to this
   secret = ["10","+","20","-","5","*","1"];
 }
 
-/* ========= Input ========= */
-// Add token to guess
-function add(token) {
-  if (finished) return; // Stop if game finished
-  if (guess.length >= 7) return; // Only allow 7 inputs
-  if (guess.length === 0 && isOp(token)) return; // Cannot start with operator
-  if (isOp(token) && isOp(guess[guess.length - 1])) return; // No two operators in a row
-  if (!isOp(token) && guess.length > 0 && !isOp(guess[guess.length - 1])) return; // No two numbers in a row
 
-  guess.push(String(token)); // Add token
-  render(); // Update board
+/* ========= Input ========= */
+function add(token) {
+  if (finished) return; // Stop if game over
+  if (guess.length >= 7) return; // Can't add more than 7 tokens
+  if (guess.length === 0 && isOp(token)) return; // Can't start with operator
+  if (isOp(token) && isOp(guess[guess.length - 1])) return; // Can't put 2 operators in a row
+  if (!isOp(token) && guess.length > 0 && !isOp(guess[guess.length - 1])) return; // Can't put 2 numbers in a row
+
+  guess.push(String(token)); // Add token to guess
+  render(); // Show on board
 }
 
-// Remove last token
 function backspace() {
   if (!finished && guess.length > 0) {
-    guess.pop();
+    guess.pop(); // Remove last token
     render();
   }
 }
 
-// Clear whole row
 function clearRow() {
   if (!finished) {
-    guess = [];
+    guess = []; // Clear everything
     render();
   }
 }
 
+
 /* ========= Render ========= */
-// Draw guess on board
 function render() {
   for (let c = 0; c < COLS; c++) {
-    const tile = document.getElementById(currentRow + "-" + c);
-    tile.className = "tile"; // Reset tile style
+    const tile = document.getElementById(currentRow + "-" + c); // Get tile
 
     if (c < 7) {
-      // First 7 are guess tokens
-      tile.innerText = guess[c] || "";
+      tile.innerText = guess[c] || ""; // Show guess token or empty
     } else if (c === 7) {
-      // 8th tile is always "="
-      tile.innerText = "=";
-      tile.classList.add("red-tile");
-    } else if (c >= 8) {
-      // Last tile is the result (wide box)
-      const expr = guess.slice(0, 7).join("");
+      tile.innerText = "="; // Always "="
+    } else if (c === 8) {
+      const expr = guess.slice(0, 7).join(""); // Join guess
       try {
-        tile.innerText = eval(expr);  // calculate result
+        tile.innerText = eval(expr); // Show result
       } catch {
-        tile.innerText = "";          // empty if invalid
+        tile.innerText = ""; // Show nothing if invalid
       }
-      tile.classList.add("red-tile");     // red background
-      tile.classList.add("result-tile");  // wider tile
     }
   }
 }
 
 
 /* ========= Guess Check ========= */
-// Check if token is operator
-function isOp(t) { return ops.indexOf(t) !== -1; }
+function isOp(t) { return ops.indexOf(t) !== -1; } // True if token is operator
 
-// Check if guess follows pattern NUM OP NUM ...
 function validGuess(tokens) {
-  if (tokens.length !== 7) return false;
+  if (tokens.length !== 7) return false; // Must have 7 tokens
   for (let i = 0; i < tokens.length; i++) {
-    if (i % 2 === 0) { if (isOp(tokens[i])) return false; } // Even positions = numbers
-    else { if (!isOp(tokens[i])) return false; } // Odd positions = operators
+    if (i % 2 === 0) { // Even positions = number
+      if (isOp(tokens[i])) return false;
+    } else { // Odd positions = operator
+      if (!isOp(tokens[i])) return false;
+    }
   }
-  return true;
+  return true; // Guess is valid
 }
 
-// Submit guess
 function submit() {
-  if (finished) return;
+  if (finished) return; // Stop if game over
 
-  if (!validGuess(guess)) {
+  if (!validGuess(guess)) { // If guess is wrong format
     showMsg("⚠️ Follow pattern NUM OP NUM OP NUM OP NUM");
     return;
   }
 
-  // Prepare feedback
-  const feedback = [];
+  const feedback = []; // Keep track of right/wrong
   for (let i = 0; i < COLS; i++) feedback.push("absent");
 
-  const secretCopy = secret.slice(); // Copy secret
+  const secretCopy = secret.slice(); // Copy secret so we can mark used items
 
-  // Check correct positions
+  // Check exact matches
   for (let i = 0; i < 7; i++) {
     if (guess[i] === secretCopy[i]) {
-      feedback[i] = "correct";
-      secretCopy[i] = null;
+      feedback[i] = "correct"; // Right place
+      secretCopy[i] = null;    // Mark as used
     }
   }
 
@@ -242,31 +239,30 @@ function submit() {
     if (feedback[i] !== "correct") {
       const idx = secretCopy.indexOf(guess[i]);
       if (idx !== -1) {
-        feedback[i] = "present";
-        secretCopy[idx] = null;
+        feedback[i] = "present"; // Exists but wrong place
+        secretCopy[idx] = null;  // Mark as used
       }
     }
   }
 
-  // Re-draw row
-  render();
+  render(); // Update board
 
-  // Animate and color
+  // Animate and color the tiles
   for (let c = 0; c < 7; c++) {
     const tile = document.getElementById(currentRow + "-" + c);
     tile.classList.add("flip");
     setTimeout(function() {
       tile.classList.remove("flip");
-      tile.classList.add(feedback[c]);
+      tile.classList.add(feedback[c]); // Add color
     }, 300);
   }
 
-  // Evaluate expression
+  // Calculate expression value
   const expr = guess.join("");
   let val;
   try { val = eval(expr); } catch { val = "invalid"; }
 
-  // Check win
+  // Check if fully correct
   let allCorrect = true;
   for (let i = 0; i < 7; i++) {
     if (feedback[i] !== "correct") allCorrect = false;
@@ -274,42 +270,40 @@ function submit() {
 
   if (allCorrect && val === TARGET) {
     showMsg("🎉 Correct! " + expr + " = " + TARGET);
-    endGame();
+    endGame(); // Win
   } else {
     showMsg("❌ " + expr + " = " + val + " — not correct");
-    nextRow();
+    nextRow(); // Move to next try
   }
 }
 
-// Go to next row
 function nextRow() {
-  currentRow++;
-  guess = [];
-  if (currentRow >= ROWS) {
+  currentRow++; // Move to next row
+  guess = [];   // Clear guess
+  if (currentRow >= ROWS) { // If no more rows
     showMsg("Game Over! Secret was: " + secret.join("") + " = " + TARGET);
-    endGame();
+    endGame(); // Game over
   }
 }
 
-// End the game
 function endGame() {
-  finished = true;
+  finished = true; // Stop playing
   const buttons = document.querySelectorAll("button");
   for (let i = 0; i < buttons.length; i++) {
-    buttons[i].disabled = true;
+    buttons[i].disabled = true; // Disable all buttons
   }
 }
 
-// Show message
 function showMsg(msg) {
-  document.getElementById("answer").innerText = msg;
+  document.getElementById("answer").innerText = msg; // Show message
 }
+
 
 /* ========= Flip Animation ========= */
 function addFlipAnimationCSS() {
-  const style = document.createElement("style");
+  const style = document.createElement("style"); // Make style tag
   style.innerHTML = 
-    ".tile.flip { animation: flip 0.6s ease forwards; }" +
+    ".tile.flip { animation: flip 0.6s ease forwards; }" + // Flip effect
     "@keyframes flip { 0%{transform:rotateX(0deg);} 50%{transform:rotateX(90deg);} 100%{transform:rotateX(0deg);} }";
-  document.head.appendChild(style);
+  document.head.appendChild(style); // Add style to page
 }
