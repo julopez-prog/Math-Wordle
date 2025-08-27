@@ -1,140 +1,196 @@
-/* Base */
+/* ===============================
+   Base Styles for the Page
+   =============================== */
 body {
-  font-family: Arial, Helvetica, sans-serif; /* Sets the text style to Arial, or Helvetica/sans-serif if Arial is unavailable */
-  text-align: center; /* Centers all text inside the body */
-  margin: 0; /* Removes default browser margin around the page */
-  padding: 20px; /* Adds 20px padding around the content */
+  font-family: Arial, Helvetica, sans-serif; /* Use clean, easy-to-read font */
+  text-align: center;   /* Center-align text like titles and messages */
+  margin: 0;            /* Remove default browser margins */
+  padding: 20px;        /* Add some space around the page content */
+  background: #f4f4f4;  /* Light gray background for a soft look */
 }
 
-hr {
-  width: 500px; /* Makes the horizontal line 500px wide */
-  max-width: 90%; /* Prevents it from overflowing small screens (takes at most 90% width) */
+/* ===============================
+   Game Container (board + keypad)
+   =============================== */
+#gameContainer {
+  display: flex;              /* Place children (board and keypad) in a row */
+  justify-content: center;    /* Center the whole group horizontally */
+  align-items: flex-start;    /* Align items at the top (not vertically centered) */
+  gap: 60px;                  /* Space between board and keypad */
+  margin-top: 20px;           /* Push container down a little */
+  flex-wrap: wrap;            /* If screen is too small, items will wrap (keypad goes below) */
 }
 
-#title {
-  font-size: 36px; /* Large font size for the title */
-  font-weight: bold; /* Makes the title bold */
-  letter-spacing: 2px; /* Adds spacing between letters */
-  margin: 10px 0 6px; /* Adds 10px margin on top, 6px on bottom, 0 on sides */
-}
-
-#target, #choices {
-  margin: 4px 0; /* Small vertical margin for spacing */
-}
-
-/* Board uses grid for exact rows & columns (prevents overlap) */
+/* ===============================
+   Board (grid of tiles)
+   =============================== */
 #board {
-  --cols: 5; /* CSS variable: default number of columns (changed by JS later) */
-  display: grid; /* Turns the board into a grid container */
-  grid-template-columns: repeat(var(--cols), 72px); /* Creates equal-width columns of 72px */
-  gap: 8px; /* Adds 8px space between tiles */
-  justify-content: center; /* Centers the grid horizontally */
-  margin: 12px auto 16px; /* Adds top (12px) and bottom (16px) margin, centers with auto left/right */
-  max-width: calc(var(--cols) * 72px + (var(--cols) - 1) * 8px); /* Prevents the board from stretching beyond the calculated total width */
+  --cols: 10; /* Total columns (7 tokens + "=" + result box) */
+
+  display: grid; /* Use CSS Grid layout for tiles */
+  grid-template-columns: repeat(var(--cols), 72px); 
+  /* Creates 10 equal-width columns of 72px each */
+
+  gap: 8px;            /* Space between tiles */
+  justify-content: center; /* Center the board horizontally */
+  margin: 0 auto;      /* Auto margins keep it centered */
 }
 
-/* Tiles */
+/* ===============================
+   Tiles (boxes for numbers/operators)
+   =============================== */
 .tile {
-  border: 2px solid lightgray; /* Light gray border around each tile */
-  width: 72px; /* Tile width */
-  height: 72px; /* Tile height (square shape) */
-  box-sizing: border-box; /* Ensures padding/border are included in total size */
-  color: black; /* Text color inside tile */
-  font-size: 22px; /* Size of text */
-  font-weight: bold; /* Bold text */
-  display: flex; /* Use flexbox inside tile */
-  justify-content: center; /* Center text horizontally */
-  align-items: center; /* Center text vertically */
-  white-space: nowrap; /* Prevents wrapping of text inside tile */
+  border: 2px solid lightgray; /* Light border around each tile */
+  width: 72px;   /* Each tile has a fixed width */
+  height: 72px;  /* Each tile has a fixed height */
+
+  /* Flexbox to center the content inside each tile */
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+
+  font-weight: bold;  /* Make text bold */
+  font-size: 22px;    /* Slightly larger text for visibility */
+  box-sizing: border-box; /* Ensures padding/border don’t break the size */
 }
 
-/* Feedback colors */
-.correct {
-  background-color: #6AAA64; /* Green background (correct position) */
-  color: white; /* White text */
-  border-color: white; /* White border */
-}
-.present {
-  background-color: #C9B458; /* Yellow background (present but wrong position) */
-  color: white; /* White text */
-  border-color: white; /* White border */
-}
-.absent {
-  background-color: #787C7E; /* Gray background (not present at all) */
-  color: white; /* White text */
-  border-color: white; /* White border */
+/* Special tile (result wide box) defaults */
+/* Make the result tile wider and keep text perfectly centered */
+.result-tile {
+  width: 300px;              /* wide enough for longer results */
+  height: 72px;              /* same height as other tiles */
+  display: flex;             /* use flexbox for centering */
+  justify-content: center;   /* center horizontally */
+  align-items: center;       /* center vertically */
+  font-size: 22px;           /* readable text size */
+  font-weight: bold;         /* match other tiles */
+  box-sizing: border-box;    /* ensures padding/border don't mess up width */
 }
 
-/* Keypad */
+
+/* ===============================
+   Tile Feedback Colors (like Wordle)
+   =============================== */
+.correct { background-color: #6AAA64; color: white; border-color: white; }  /* Correct position */
+.present { background-color: #C9B458; color: white; border-color: white; }  /* Wrong place but exists */
+.absent  { background-color: #787C7E; color: white; border-color: white; }  /* Not in the secret */
+
+/* ===============================
+   Keypad (number + operator buttons)
+   =============================== */
 #keypad {
-  max-width: 720px; /* Restricts keypad to 720px */
-  margin: 0 auto; /* Centers the keypad horizontally */
+  width: 320px;                /* Fixed keypad width */
+  display: flex;               /* Use flex layout */
+  flex-direction: column;      /* Arrange elements vertically */
+  align-items: center;         /* Center all keypad content horizontally */
+  background: #fafafa;         /* White-ish background for contrast */
+  padding: 16px;               /* Space inside keypad */
+  border-radius: 12px;         /* Rounded corners */
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1); /* Subtle shadow for depth */
+  margin: 0 auto;              /* Center it if wrapped below board */
 }
 
-.pad-group {
-  margin: 10px 0; /* Vertical spacing between keypad groups */
+/* Groups of keypad buttons */
+.pad-group { 
+  margin: 10px 0; /* Space above and below each group */
+  width: 100%;    /* Stretch group width to fill keypad */
 }
 
-.pad-group h3 {
-  margin: 8px 0 6px; /* Margin for group titles */
-  font-size: 18px; /* Font size for keypad group labels */
+/* Headings inside keypad (like "Numbers", "Operators") */
+.pad-group h3 { 
+  margin: 8px 0 6px; /* Top, right/left, bottom */
+  font-size: 18px;   /* Slightly bigger than normal text */
 }
 
+/* Wrapper for keypad buttons */
 .pad {
-  display: flex; /* Use flexbox layout for keypad buttons */
-  flex-wrap: wrap; /* Allow buttons to wrap to next line if needed */
-  gap: 8px; /* Add spacing between buttons */
-  justify-content: center; /* Center all buttons */
+  display: flex;         /* Arrange buttons in a row */
+  flex-wrap: wrap;       /* Allow buttons to wrap if no space */
+  gap: 8px;              /* Space between buttons */
+  justify-content: center; /* Center buttons */
 }
 
+/* ===============================
+   Button Styling
+   =============================== */
 .choice-btn, .op-btn, .action-btn {
-  min-width: 72px; /* Minimum button width */
-  height: 42px; /* Fixed height */
-  padding: 0 10px; /* Horizontal padding for text inside */
-  font-size: 16px; /* Font size of button text */
-  font-weight: bold; /* Bold button text */
-  border: 2px solid #ccc; /* Light gray border */
-  border-radius: 8px; /* Rounded corners */
-  background: #f7f7f7; /* Light background color */
-  cursor: pointer; /* Cursor turns into pointer on hover */
+  min-width: 70px;   /* Minimum width for readability */
+  height: 50px;      /* Tall enough for touch */
+  padding: 0 10px;   /* Some horizontal padding */
+  font-size: 18px;   /* Larger text for clarity */
+  font-weight: bold; /* Bold text */
+  border: 2px solid #ccc;  /* Light gray border */
+  border-radius: 8px;      /* Rounded corners */
+  background: #f7f7f7;     /* Light background */
+  cursor: pointer;         /* Show pointer on hover */
+  transition: background 0.2s; /* Smooth hover effect */
 }
 
-.choice-btn:disabled {
-  opacity: 0.45; /* Makes disabled buttons look faded */
-  cursor: not-allowed; /* Shows "not allowed" cursor */
+/* Hover effect */
+.choice-btn:hover, .op-btn:hover, .action-btn:hover {
+  background: #eaeaea; /* Slightly darker background */
 }
 
-.op-btn {
-  min-width: 72px; /* Ensures operator buttons have equal width */
+/* Disabled button */
+.choice-btn:disabled { 
+  opacity: 0.45;          /* Faded look */
+  cursor: not-allowed;    /* Show "not allowed" cursor */
 }
 
-.pad-actions {
-  display: flex; /* Flexbox layout for action buttons */
-  gap: 12px; /* Space between buttons */
-  justify-content: center; /* Center align the buttons */
-  margin-top: 8px; /* Adds space above action buttons */
+/* Operator buttons get same min-width as numbers */
+.op-btn { min-width: 70px; }
+
+/* Action buttons (Clear, Enter, Backspace) group */
+.pad-actions { 
+  display: flex;
+  gap: 12px; 
+  justify-content: center; 
+  margin-top: 8px; 
 }
 
-.action-btn.primary {
-  background: #6AAA64; /* Green background for "Enter" button */
-  color: white; /* White text */
-  border-color: #6AAA64; /* Matches the background color */
+/* Primary action button (Enter) */
+.action-btn.primary { 
+  background: #6AAA64;  /* Green background */
+  color: white; 
+  border-color: #6AAA64; 
 }
 
-/* ========== Correct State ========== */
-.choice-btn.correct, .op-btn.correct {
-  background-color: #6aaa64; /* Green background (same as Wordle's correct color) */
-  color: white;              /* White text for strong contrast on green */
+/* ===============================
+   Feedback States for Keypad
+   =============================== */
+.choice-btn.correct, .op-btn.correct { background-color: #6aaa64; color: white; }
+.choice-btn.present, .op-btn.present { background-color: #c9b458; color: white; }
+.choice-btn.absent,  .op-btn.absent  { background-color: #787c7e; color: white; }
+
+/* ===============================
+   Special Styling for Red Tiles (= and Result)
+   =============================== */
+.red-tile {
+  background-color: #FF4C4C; /* Bright red background */
+  color: white;              /* White text */
+  border-color: white;       /* White border */
 }
 
-/* ========== Present State ========== */
-.choice-btn.present, .op-btn.present {
-  background-color: #c9b458; /* Yellow background (indicates token is in equation but misplaced) */
-  color: white;              /* White text for readability on yellow */
+/* The wide result tile (last column) */
+.result-tile {
+  width: 300px;          /* Wide enough to show results */
+  text-align: center;    /* Center the result number */
+  font-size: 22px;       /* Same font size as others */
+  box-sizing: border-box; /* Keep size consistent */
 }
 
-/* ========== Absent State ========== */
-.choice-btn.absent, .op-btn.absent {
-  background-color: #787c7e; /* Gray background (indicates token not in equation at all) */
-  color: white;              /* White text for readability on dark gray */
+/* ===============================
+   Responsive Design (small screens)
+   =============================== */
+@media (max-width: 768px) {
+  #gameContainer {
+    flex-direction: column; /* Stack board and keypad vertically */
+    align-items: center;    /* Center them */
+    gap: 30px;              /* Smaller gap on mobile */
+  }
+
+  #keypad {
+    width: 100%;        /* Stretch keypad to fit screen */
+    max-width: 400px;   /* But don’t go too wide */
+  }
 }
