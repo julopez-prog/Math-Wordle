@@ -1,146 +1,125 @@
 /* ===============================
    Base Styles for the Page
-   =============================== */
+   ================================ */
 body {
-  font-family: Arial, Helvetica, sans-serif; /* Use clean, easy-to-read font */
-  text-align: center;   /* Center-align text like titles and messages */
-  margin: 0;            /* Remove default browser margins */
-  padding: 20px;        /* Add some space around the page content */
-  background: #f4f4f4;  /* Light gray background for a soft look */
+  font-family: Arial, Helvetica, sans-serif;
+  text-align: center;
+  margin: 0;
+  padding: 20px;
+  background: #f4f4f4;
 }
 
 /* ===============================
-   Game Container (board + keypad)
-   =============================== */
+   Game Container
+   ================================ */
 #gameContainer {
-  display: flex;              /* Place children (board and keypad) in a row */
-  justify-content: center;    /* Center the whole group horizontally */
-  align-items: flex-start;    /* Align items at the top (not vertically centered) */
-  gap: 60px;                  /* Space between board and keypad */
-  margin-top: 20px;           /* Push container down a little */
-  flex-wrap: wrap;            /* If screen is too small, items will wrap (keypad goes below) */
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 60px;
+  margin-top: 20px;
+  flex-wrap: wrap;
 }
 
 /* ===============================
-   Board (grid of tiles)
-   =============================== */
+   Board
+   ================================ */
 #board {
-  --cols: 10; /* Total columns (7 tokens + "=" + result box) */
-
-  display: grid; /* Use CSS Grid layout for tiles */
-  grid-template-columns: repeat(var(--cols), 72px); 
-  /* Creates 10 equal-width columns of 72px each */
-
-  gap: 8px;            /* Space between tiles */
-  justify-content: center; /* Center the board horizontally */
-  margin: 0 auto;      /* Auto margins keep it centered */
+  --cols: 10;
+  display: grid;
+  grid-template-columns: repeat(var(--cols), 72px);
+  gap: 8px;
+  justify-content: center;
+  margin: 0 auto;
 }
 
 /* ===============================
-   Tiles (boxes for numbers/operators)
-   =============================== */
+   Tiles
+   ================================ */
 .tile {
-  border: 2px solid lightgray; /* Light border around each tile */
-  width: 72px;   /* Each tile has a fixed width */
-  height: 72px;  /* Each tile has a fixed height */
-
-  /* Flexbox to center the content inside each tile */
+  border: 2px solid lightgray;
+  width: 72px;
+  height: 72px;
   display: inline-flex;
   justify-content: center;
   align-items: center;
-
-  font-weight: bold;  /* Make text bold */
-  font-size: 22px;    /* Slightly larger text for visibility */
-  box-sizing: border-box; /* Ensures padding/border don’t break the size */
+  font-weight: bold;
+  font-size: 22px;
+  box-sizing: border-box;
 }
 
-/* Special tile (result wide box) defaults */
-/* Make the result tile wider and keep text perfectly centered */
 .result-tile {
-  width: 300px;              /* wide enough for longer results */
-  height: 72px;              /* same height as other tiles */
-  display: flex;             /* use flexbox for centering */
-  justify-content: center;   /* center horizontally */
-  align-items: center;       /* center vertically */
-  font-size: 22px;           /* readable text size */
-  font-weight: bold;         /* match other tiles */
-  box-sizing: border-box;    /* ensures padding/border don't mess up width */
+  width: 300px;
+  height: 72px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 22px;
+  font-weight: bold;
+  box-sizing: border-box;
 }
 
+/* Feedback colors */
+.correct { background-color: #6AAA64; color: white; border-color: white; }
+.present { background-color: #C9B458; color: white; border-color: white; }
+.absent  { background-color: #787C7E; color: white; border-color: white; }
 
 /* ===============================
-   Tile Feedback Colors (like Wordle)
-   =============================== */
-.correct { background-color: #6AAA64; color: white; border-color: white; }  /* Correct position */
-.present { background-color: #C9B458; color: white; border-color: white; }  /* Wrong place but exists */
-.absent  { background-color: #787C7E; color: white; border-color: white; }  /* Not in the secret */
-
-/* ===============================
-   Keypad (number + operator buttons)
-   =============================== */
+   Keypad
+   ================================ */
 #keypad {
-  width: 320px;                /* Fixed keypad width */
-  display: flex;               /* Use flex layout */
-  flex-direction: column;      /* Arrange elements vertically */
-  align-items: center;         /* Center all keypad content horizontally */
-  background: #fafafa;         /* White-ish background for contrast */
-  padding: 16px;               /* Space inside keypad */
-  border-radius: 12px;         /* Rounded corners */
-  box-shadow: 0 4px 10px rgba(0,0,0,0.1); /* Subtle shadow for depth */
-  margin: 0 auto;              /* Center it if wrapped below board */
+  width: 320px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: #fafafa;
+  padding: 16px;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  margin: 0 auto;
 }
 
-/* Groups of keypad buttons */
 .pad-group { 
-  margin: 10px 0; /* Space above and below each group */
-  width: 100%;    /* Stretch group width to fill keypad */
+  margin: 10px 0;
+  width: 100%;
 }
 
-/* Headings inside keypad (like "Numbers", "Operators") */
 .pad-group h3 { 
-  margin: 8px 0 6px; /* Top, right/left, bottom */
-  font-size: 18px;   /* Slightly bigger than normal text */
+  margin: 8px 0 6px;
+  font-size: 18px;
 }
 
-/* Wrapper for keypad buttons */
 .pad {
-  display: flex;         /* Arrange buttons in a row */
-  flex-wrap: wrap;       /* Allow buttons to wrap if no space */
-  gap: 8px;              /* Space between buttons */
-  justify-content: center; /* Center buttons */
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
 }
 
-/* ===============================
-   Button Styling
-   =============================== */
 .choice-btn, .op-btn, .action-btn {
-  min-width: 70px;   /* Minimum width for readability */
-  height: 50px;      /* Tall enough for touch */
-  padding: 0 10px;   /* Some horizontal padding */
-  font-size: 18px;   /* Larger text for clarity */
-  font-weight: bold; /* Bold text */
-  border: 2px solid #ccc;  /* Light gray border */
-  border-radius: 8px;      /* Rounded corners */
-  background: #f7f7f7;     /* Light background */
-  cursor: pointer;         /* Show pointer on hover */
-  transition: background 0.2s; /* Smooth hover effect */
+  min-width: 70px;
+  height: 50px;
+  padding: 0 10px;
+  font-size: 18px;
+  font-weight: bold;
+  border: 2px solid #ccc;
+  border-radius: 8px;
+  background: #f7f7f7;
+  cursor: pointer;
+  transition: background 0.2s;
 }
 
-/* Hover effect */
 .choice-btn:hover, .op-btn:hover, .action-btn:hover {
-  background: #eaeaea; /* Slightly darker background */
+  background: #eaeaea;
 }
 
-/* Disabled button */
 .choice-btn:disabled { 
-  opacity: 0.45;          /* Faded look */
-  cursor: not-allowed;    /* Show "not allowed" cursor */
+  opacity: 0.45;
+  cursor: not-allowed;
 }
 
-/* Operator buttons get same min-width as numbers */
 .op-btn { min-width: 70px; }
 
-/* Action buttons (Clear, Enter, Backspace) group */
 .pad-actions { 
   display: flex;
   gap: 12px; 
@@ -148,49 +127,45 @@ body {
   margin-top: 8px; 
 }
 
-/* Primary action button (Enter) */
 .action-btn.primary { 
-  background: #6AAA64;  /* Green background */
-  color: white; 
-  border-color: #6AAA64; 
+  background: #6AAA64;
+  color: white;
+  border-color: #6AAA64;
 }
 
-/* ===============================
-   Feedback States for Keypad
-   =============================== */
+/* Keypad feedback */
 .choice-btn.correct, .op-btn.correct { background-color: #6aaa64; color: white; }
 .choice-btn.present, .op-btn.present { background-color: #c9b458; color: white; }
 .choice-btn.absent,  .op-btn.absent  { background-color: #787c7e; color: white; }
 
 /* ===============================
-   Special Styling for Red Tiles (= and Result)
-   =============================== */
+   Special Styling for Red Tiles
+   ================================ */
 .red-tile {
-  background-color: #FF4C4C; /* Bright red background */
-  color: white;              /* White text */
-  border-color: white;       /* White border */
+  background-color: #FF4C4C;
+  color: white;
+  border-color: white;
 }
 
-/* The wide result tile (last column) */
 .result-tile {
-  width: 300px;          /* Wide enough to show results */
-  text-align: center;    /* Center the result number */
-  font-size: 22px;       /* Same font size as others */
-  box-sizing: border-box; /* Keep size consistent */
+  width: 300px;
+  text-align: center;
+  font-size: 22px;
+  box-sizing: border-box;
 }
 
 /* ===============================
-   Responsive Design (small screens)
-   =============================== */
+   Responsive
+   ================================ */
 @media (max-width: 768px) {
   #gameContainer {
-    flex-direction: column; /* Stack board and keypad vertically */
-    align-items: center;    /* Center them */
-    gap: 30px;              /* Smaller gap on mobile */
+    flex-direction: column;
+    align-items: center;
+    gap: 30px;
   }
 
   #keypad {
-    width: 100%;        /* Stretch keypad to fit screen */
-    max-width: 400px;   /* But don’t go too wide */
+    width: 100%;
+    max-width: 400px;
   }
 }
