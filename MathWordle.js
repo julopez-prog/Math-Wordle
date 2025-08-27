@@ -248,14 +248,19 @@ function submit() {
   render(); // Update board
 
   // Animate and color the tiles
+// Animate and color the tiles + update keypad
   for (let c = 0; c < 7; c++) {
-    const tile = document.getElementById(currentRow + "-" + c);
-    tile.classList.add("flip");
-    setTimeout(function() {
-      tile.classList.remove("flip");
-      tile.classList.add(feedback[c]); // Add color
-    }, 300);
-  }
+  const tile = document.getElementById(currentRow + "-" + c);
+  const state = feedback[c]; // correct, present, absent
+  const token = guess[c];
+
+  tile.classList.add("flip");
+  setTimeout(function() {
+    tile.classList.remove("flip");
+    tile.classList.add(state); // color tile
+    updateKeypad(token, state); // color keypad
+  }, 300);
+}
 
   // Calculate expression value
   const expr = guess.join("");
@@ -306,4 +311,23 @@ function addFlipAnimationCSS() {
     ".tile.flip { animation: flip 0.6s ease forwards; }" + // Flip effect
     "@keyframes flip { 0%{transform:rotateX(0deg);} 50%{transform:rotateX(90deg);} 100%{transform:rotateX(0deg);} }";
   document.head.appendChild(style); // Add style to page
+}
+
+function updateKeypad(token, state) {
+  // Find the button that matches the token
+  const buttons = document.querySelectorAll("button");
+  for (let i = 0; i < buttons.length; i++) {
+    if (buttons[i].innerText === token) {
+      // Don't downgrade colors: correct > present > absent
+      if (state === "correct") {
+        buttons[i].classList.remove("present", "absent");
+        buttons[i].classList.add("correct");
+      } else if (state === "present" && !buttons[i].classList.contains("correct")) {
+        buttons[i].classList.remove("absent");
+        buttons[i].classList.add("present");
+      } else if (state === "absent" && !buttons[i].classList.contains("correct") && !buttons[i].classList.contains("present")) {
+        buttons[i].classList.add("absent");
+      }
+    }
+  }
 }
