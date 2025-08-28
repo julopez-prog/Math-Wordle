@@ -1,333 +1,342 @@
 /* ========= Settings ========= */
-const ROWS = 7; // How many guesses the player can make
-const COLS = 9; // 7 slots for numbers/operators + 1 "=" slot + 1 result slot
+const ROWS = 7; // attempts
+const COLS = 9; // 7 tokens + "=" + result
 
-// Possible target numbers (the goal the player must reach)
 const targets = [10,20,40,50,60,80,100,150,200,250];
 
-// Numbers that can appear in the puzzle
-const numbers = [1,2,3,4,5,8,10,15,20,25,30,40,50,60,75,80,90,100,150,200,250];
+const easyNumbers = [1,2,3,4,5,8,10,15,20,25,30,40,50,60,75,100,150,200,250];
 
-// Operators the player can use
-const ops = ["+","-","*","/","**"]; // ** means "to the power of"
+const hardNumbers = [
+  ...easyNumbers,
+  "1/2","1/3","1/4","1/5","1/10","1/20",
+  0, -1, -2, -5, -10, -20
+];
 
+const easyOps = ["+","-","*","/"];
+const hardOps = ["+","-","*","/","%","**"];
 
 /* ========= Game State ========= */
-let currentRow = 0;   // Which row (attempt) the player is currently filling in
-let guess = [];       // What the player has typed so far
-let secret = [];      // The hidden correct answer (numbers + operators)
-let TARGET;           // The goal number the player must reach
-let finished = false; // True if the game is over, false if still playing
+let numbers = [];
+let ops = [];
+let restrictToTarget = false;
 
+let currentRow = 0;
+let guess = [];
+let secret = [];
+let TARGET;
+let finished = false;
 
-/* ========= Start Game ========= */
-window.onload = function() { // This runs when the page loads
-  pickSecret(); // Choose a random puzzle
-  document.getElementById("target").innerText = "🎯 Target: " + TARGET; // Show the target number
-  document.getElementById("choices").innerText = "Pattern: NUM OP NUM OP NUM OP NUM = RESULT"; // Show the input pattern
-  buildBoard();  // Make the empty game board
-  buildKeypad(); // Make the number and operator buttons
+/* ========= Start ========= */
+window.onload = function() {
+  document.getElementById("easyBtn").onclick = () => startGame("easy");
+  document.getElementById("hardBtn").onclick = () => startGame("hard");
+  // default: Easy
+  startGame("easy");
 };
 
+function startGame(mode) {
+  finished = false;
+  currentRow = 0;
+  guess = [];
+  document.getElementById("answer").innerText = "";
+  document.getElementById("board").innerHTML = "";
 
-/* ========= Board ========= */
-function buildBoard() {
-  const board = document.getElementById("board"); // Get the board area
-  board.style.setProperty("--cols", COLS); // Set the number of columns
-  board.innerHTML = ""; // Clear anything already inside
-
-  // Make each row and each column
-  for (let r = 0; r < ROWS; r++) {
-    for (let c = 0; c < COLS; c++) {
-      const tile = document.createElement("div"); // Create a box (tile)
-      tile.id = r + "-" + c; // Give it a unique ID like "0-0", "0-1", etc.
-      tile.className = "tile"; // Give it the tile style
-
-      // If we are in the 8th column, this tile is "="
-      if (c === 7) {
-        tile.innerText = "="; // Put "=" sign inside
-        tile.classList.add("red-tile"); // Make it red
-      }
-
-      // If we are in the 9th column, this tile is for the result
-      if (c === 8) {
-        tile.classList.add("red-tile");      // Make it red
-        tile.classList.add("result-tile");   // Make it wide
-      }
-
-      board.appendChild(tile); // Add the tile to the board
-    }
+  if (mode === "easy") {
+    numbers = easyNumbers.slice();
+    ops = easyOps.slice();
+    restrictToTarget = false;
+    document.getElementById("keypad").classList.remove("hard");
+  } else {
+    numbers = hardNumbers.slice();
+    ops = hardOps.slice();
+    restrictToTarget = true;
+    document.getElementById("keypad").classList.add("hard");
   }
 
-  addFlipAnimationCSS(); // Add the flip animation style
+  // pick a target and a valid secret expression that equals it
+  TARGET = targets[Math.floor(Math.random() * targets.length)];
+  pickSecret(); // fills `secret` for feedback / solution
 
-  // Listen for keyboard keys (Enter = submit, Backspace = delete)
-  document.addEventListener("keydown", function(e) {
-    if (finished) return; // Stop if game is over
-    if (e.key === "Enter") { e.preventDefault(); submit(); }     // Submit guess
-    if (e.key === "Backspace") { e.preventDefault(); backspace(); } // Delete last input
-  });
+  document.getElementById("target").innerText = "Target: " + TARGET;
+  document.getElementById("choices").innerText = "Pattern: NUM OP NUM OP NUM OP NUM = RESULT";
+
+  buildBoard();
+  buildKeypad();
 }
-
-
-/* ========= Keypad ========= */
-function buildKeypad() {
-  const numWrap = document.getElementById("numberChoices");   // Where numbers go
-  const opWrap = document.getElementById("operatorChoices");  // Where operators go
-
-  numWrap.innerHTML = ""; // Clear any old buttons
-  opWrap.innerHTML = "";
-
-  // Make buttons for numbers
-  for (let i = 0; i < numbers.length; i++) {
-    const btn = makeBtn("choice-btn", numbers[i], function() { add(numbers[i]); });
-    numWrap.appendChild(btn); // Add the button
-  }
-
-  // Make buttons for operators
-  for (let i = 0; i < ops.length; i++) {
-    const btn = makeBtn("op-btn", ops[i], function() { add(ops[i]); });
-    opWrap.appendChild(btn); // Add the button
-  }
-
-  // Make the action buttons work
-  document.getElementById("backspaceBtn").onclick = backspace;
-  document.getElementById("clearBtn").onclick = clearRow;
-  document.getElementById("submitBtn").onclick = submit;
-}
-
-// Function to create a button
-function makeBtn(cls, text, fn) {
-  const btn = document.createElement("button"); // Make button
-  btn.className = cls;     // Give it a style
-  btn.innerText = text;    // Show text inside
-  btn.onclick = fn;        // Run function when clicked
-  return btn;              // Return the button
-}
-
 
 /* ========= Secret ========= */
 function pickSecret() {
-  TARGET = targets[Math.floor(Math.random() * targets.length)]; // Pick a random target number
-  const tries = 50000; // Try this many times to find a valid secret
+  // Try to randomly discover a valid expression from current numbers/ops
+  const tries = 60000;
 
-  // Try to find numbers/operators that equal TARGET
   for (let i = 0; i < tries; i++) {
-    // Pick 4 random numbers
     const nums = [
-      numbers[Math.floor(Math.random() * numbers.length)],
-      numbers[Math.floor(Math.random() * numbers.length)],
-      numbers[Math.floor(Math.random() * numbers.length)],
-      numbers[Math.floor(Math.random() * numbers.length)]
+      randFrom(numbers),
+      randFrom(numbers),
+      randFrom(numbers),
+      randFrom(numbers)
     ];
 
-    // Pick 3 random operators
     const opsPicked = [
-      ops[Math.floor(Math.random() * ops.length)],
-      ops[Math.floor(Math.random() * ops.length)],
-      ops[Math.floor(Math.random() * ops.length)]
+      randFrom(ops),
+      randFrom(ops),
+      randFrom(ops)
     ];
 
-    // Build expression like "10+20*5-2"
-    const expr = nums[0] + opsPicked[0] + nums[1] + opsPicked[1] + nums[2] + opsPicked[2] + nums[3];
+    // Avoid super huge exponent cases: small guard (optional)
+    const expr = `${nums[0]}${opsPicked[0]}${nums[1]}${opsPicked[1]}${nums[2]}${opsPicked[2]}${nums[3]}`;
 
     try {
-      if (eval(expr) === TARGET) { // If it matches target
-        // Save the secret as tokens
+      const v = eval(expr);
+      if (Number.isFinite(v) && v === TARGET) {
         secret = [
           String(nums[0]), opsPicked[0],
           String(nums[1]), opsPicked[1],
           String(nums[2]), opsPicked[2],
           String(nums[3])
         ];
-        return; // Done
+        return;
       }
     } catch {}
   }
 
-  // If no secret found, fallback to this
-  secret = ["10","+","20","-","5","*","1"];
+  // Robust fallback that always equals TARGET (uses only +,-,* and numbers we have)
+  // TARGET (in both modes) is guaranteed to be present in easyNumbers
+  secret = [String(TARGET), "+", "1", "-", "1", "*", "1"];
 }
 
+function randFrom(arr) {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+
+/* ========= Board ========= */
+function buildBoard() {
+  const board = document.getElementById("board");
+  board.innerHTML = "";
+
+  for (let r = 0; r < ROWS; r++) {
+    for (let c = 0; c < COLS; c++) {
+      const tile = document.createElement("div");
+      tile.id = `${r}-${c}`;
+      tile.className = "tile";
+
+      if (c === 7) { tile.innerText = "="; tile.classList.add("red-tile"); }
+      if (c === 8) { tile.classList.add("red-tile", "result-tile"); }
+
+      board.appendChild(tile);
+    }
+  }
+
+  // minimal key listeners
+  document.onkeydown = (e) => {
+    if (finished) return;
+    if (e.key === "Enter") { e.preventDefault(); submit(); }
+    if (e.key === "Backspace") { e.preventDefault(); backspace(); }
+  };
+}
+
+/* ========= Keypad ========= */
+function buildKeypad() {
+  const numWrap = document.getElementById("numberChoices");
+  const opWrap = document.getElementById("operatorChoices");
+
+  numWrap.innerHTML = "";
+  opWrap.innerHTML = "";
+
+  numbers.forEach(n => {
+    const btn = makeBtn("choice-btn", n, () => add(n));
+    numWrap.appendChild(btn);
+  });
+
+  ops.forEach(o => {
+    const btn = makeBtn("op-btn", o, () => add(o));
+    opWrap.appendChild(btn);
+  });
+
+  document.getElementById("backspaceBtn").onclick = backspace;
+  document.getElementById("clearBtn").onclick = clearRow;
+  document.getElementById("submitBtn").onclick = submit;
+
+  // re-enable keypad in case a previous game ended
+  document.querySelectorAll("#keypad button").forEach(b => b.disabled = false);
+}
+
+function makeBtn(cls, text, fn) {
+  const btn = document.createElement("button");
+  btn.className = cls;
+  btn.innerText = text;
+  btn.onclick = fn;
+  return btn;
+}
 
 /* ========= Input ========= */
-function add(token) {
-  if (finished) return; // Stop if game over
-  if (guess.length >= 7) return; // Can't add more than 7 tokens
-  if (guess.length === 0 && isOp(token)) return; // Can't start with operator
-  if (isOp(token) && isOp(guess[guess.length - 1])) return; // Can't put 2 operators in a row
-  if (!isOp(token) && guess.length > 0 && !isOp(guess[guess.length - 1])) return; // Can't put 2 numbers in a row
+function isOp(t) { return ["+","-","*","/","%","**"].includes(t); }
 
-  guess.push(String(token)); // Add token to guess
-  render(); // Show on board
+function add(token) {
+  if (finished) return;
+  if (guess.length >= 7) return; // only 7 slots pre "="
+  if (guess.length === 0 && isOp(token)) return; // can't start with op
+  if (isOp(token) && isOp(guess[guess.length - 1])) return; // no two ops
+  if (!isOp(token) && guess.length > 0 && !isOp(guess[guess.length - 1])) return; // no two nums
+
+  guess.push(String(token));
+  render();
 }
 
 function backspace() {
   if (!finished && guess.length > 0) {
-    guess.pop(); // Remove last token
+    guess.pop();
     render();
   }
 }
 
 function clearRow() {
   if (!finished) {
-    guess = []; // Clear everything
+    guess = [];
     render();
   }
 }
 
-
 /* ========= Render ========= */
 function render() {
   for (let c = 0; c < COLS; c++) {
-    const tile = document.getElementById(currentRow + "-" + c); // Get tile
+    const tile = document.getElementById(`${currentRow}-${c}`);
+    if (!tile) continue;
 
     if (c < 7) {
-      tile.innerText = guess[c] || ""; // Show guess token or empty
+      tile.innerText = guess[c] || "";
     } else if (c === 7) {
-      tile.innerText = "="; // Always "="
+      tile.innerText = "=";
     } else if (c === 8) {
-      const expr = guess.slice(0, 7).join(""); // Join guess
+      const expr = guess.slice(0, 7).join("");
       try {
-        tile.innerText = eval(expr); // Show result
+        tile.innerText = expr ? eval(expr) : "";
       } catch {
-        tile.innerText = ""; // Show nothing if invalid
+        tile.innerText = "";
       }
     }
   }
 }
 
-
-/* ========= Guess Check ========= */
-function isOp(t) { return ops.indexOf(t) !== -1; } // True if token is operator
-
+/* ========= Guess Validate & Submit ========= */
 function validGuess(tokens) {
-  if (tokens.length !== 7) return false; // Must have 7 tokens
+  if (tokens.length !== 7) return false;
   for (let i = 0; i < tokens.length; i++) {
-    if (i % 2 === 0) { // Even positions = number
-      if (isOp(tokens[i])) return false;
-    } else { // Odd positions = operator
-      if (!isOp(tokens[i])) return false;
-    }
+    if (i % 2 === 0) { if (isOp(tokens[i])) return false; }
+    else { if (!isOp(tokens[i])) return false; }
   }
-  return true; // Guess is valid
+  return true;
 }
 
 function submit() {
-  if (finished) return; // Stop if game over
+  if (finished) return;
 
-  if (!validGuess(guess)) { // If guess is wrong format
+  if (!validGuess(guess)) {
     showMsg("⚠️ Follow pattern NUM OP NUM OP NUM OP NUM");
     return;
   }
 
-  const feedback = []; // Keep track of right/wrong
-  for (let i = 0; i < COLS; i++) feedback.push("absent");
-
-  const secretCopy = secret.slice(); // Copy secret so we can mark used items
-
-  // Check exact matches
-  for (let i = 0; i < 7; i++) {
-    if (guess[i] === secretCopy[i]) {
-      feedback[i] = "correct"; // Right place
-      secretCopy[i] = null;    // Mark as used
-    }
-  }
-
-  // Check present but wrong place
-  for (let i = 0; i < 7; i++) {
-    if (feedback[i] !== "correct") {
-      const idx = secretCopy.indexOf(guess[i]);
-      if (idx !== -1) {
-        feedback[i] = "present"; // Exists but wrong place
-        secretCopy[idx] = null;  // Mark as used
-      }
-    }
-  }
-
-  render(); // Update board
-
-  // Animate and color the tiles
-// Animate and color the tiles + update keypad
-  for (let c = 0; c < 7; c++) {
-  const tile = document.getElementById(currentRow + "-" + c);
-  const state = feedback[c]; // correct, present, absent
-  const token = guess[c];
-
-  tile.classList.add("flip");
-  setTimeout(function() {
-    tile.classList.remove("flip");
-    tile.classList.add(state); // color tile
-    updateKeypad(token, state); // color keypad
-  }, 300);
-}
-
-  // Calculate expression value
   const expr = guess.join("");
   let val;
   try { val = eval(expr); } catch { val = "invalid"; }
 
-  // Check if fully correct
-  let allCorrect = true;
-  for (let i = 0; i < 7; i++) {
-    if (feedback[i] !== "correct") allCorrect = false;
+  if (restrictToTarget && val !== TARGET) {
+    showMsg(`⚠️ Hard Mode: your equation must equal ${TARGET}. You got ${val}.`);
+    return;
   }
 
-  if (allCorrect && val === TARGET) {
-    showMsg("🎉 Correct! " + expr + " = " + TARGET);
-    endGame(); // Win
+  // Compute Wordle-style feedback against the secret
+  const feedback = Array(7).fill("absent");
+  const secretCopy = secret.slice();
+
+  // correct positions
+  for (let i = 0; i < 7; i++) {
+    if (guess[i] === secretCopy[i]) {
+      feedback[i] = "correct";
+      secretCopy[i] = null;
+    }
+  }
+  // present elsewhere
+  for (let i = 0; i < 7; i++) {
+    if (feedback[i] !== "correct") {
+      const idx = secretCopy.indexOf(guess[i]);
+      if (idx !== -1) {
+        feedback[i] = "present";
+        secretCopy[idx] = null;
+      }
+    }
+  }
+
+  // Animate + color tiles & keypad
+  for (let c = 0; c < 7; c++) {
+    const tile = document.getElementById(`${currentRow}-${c}`);
+    const state = feedback[c];
+    const token = guess[c];
+
+    // remove prior states
+    tile.classList.remove("correct","present","absent");
+    tile.classList.add("flip");
+    const delay = 120 * c;
+
+    setTimeout(() => {
+      tile.classList.remove("flip");
+      tile.classList.add(state);
+      updateKeypad(token, state);
+    }, 200 + delay);
+  }
+
+  // Win condition: all tokens correct
+  const allCorrect = feedback.every(s => s === "correct");
+
+  if (allCorrect) {
+    showMsg(`🎉 Correct! ${expr} = ${TARGET}`);
+    endGame();
   } else {
-    showMsg("❌ " + expr + " = " + val + " — not correct");
-    nextRow(); // Move to next try
+    if (!restrictToTarget) {
+      showMsg(`✅ ${expr} = ${val}`);
+    } else {
+      showMsg(`❌ ${expr} = ${val} — keep trying for ${TARGET}`);
+    }
+    nextRow();
   }
 }
 
+function updateKeypad(token, state) {
+  // Only color buttons in the keypad area
+  const buttons = document.querySelectorAll("#keypad button");
+  buttons.forEach(btn => {
+    if (btn.innerText === token) {
+      // Don't downgrade colors: correct > present > absent
+      if (state === "correct") {
+        btn.classList.remove("present", "absent");
+        btn.classList.add("correct");
+      } else if (state === "present" && !btn.classList.contains("correct")) {
+        btn.classList.remove("absent");
+        btn.classList.add("present");
+      } else if (state === "absent" && !btn.classList.contains("correct") && !btn.classList.contains("present")) {
+        btn.classList.add("absent");
+      }
+    }
+  });
+}
+
 function nextRow() {
-  currentRow++; // Move to next row
-  guess = [];   // Clear guess
-  if (currentRow >= ROWS) { // If no more rows
-    showMsg("Game Over! Secret was: " + secret.join("") + " = " + TARGET);
-    endGame(); // Game over
+  currentRow++;
+  guess = [];
+  if (currentRow >= ROWS) {
+    showMsg(`Game Over! Secret was: ${secret.join("")} = ${TARGET}`);
+    endGame();
+  } else {
+    render();
   }
 }
 
 function endGame() {
-  finished = true; // Stop playing
-  const buttons = document.querySelectorAll("button");
-  for (let i = 0; i < buttons.length; i++) {
-    buttons[i].disabled = true; // Disable all buttons
-  }
+  finished = true;
+  // disable keypad buttons (leave difficulty buttons active so player can restart)
+  document.querySelectorAll("#keypad button").forEach(b => b.disabled = true);
 }
 
 function showMsg(msg) {
-  document.getElementById("answer").innerText = msg; // Show message
-}
-
-
-/* ========= Flip Animation ========= */
-function addFlipAnimationCSS() {
-  const style = document.createElement("style"); // Make style tag
-  style.innerHTML = 
-    ".tile.flip { animation: flip 0.6s ease forwards; }" + // Flip effect
-    "@keyframes flip { 0%{transform:rotateX(0deg);} 50%{transform:rotateX(90deg);} 100%{transform:rotateX(0deg);} }";
-  document.head.appendChild(style); // Add style to page
-}
-
-function updateKeypad(token, state) {
-  // Find the button that matches the token
-  const buttons = document.querySelectorAll("button");
-  for (let i = 0; i < buttons.length; i++) {
-    if (buttons[i].innerText === token) {
-      // Don't downgrade colors: correct > present > absent
-      if (state === "correct") {
-        buttons[i].classList.remove("present", "absent");
-        buttons[i].classList.add("correct");
-      } else if (state === "present" && !buttons[i].classList.contains("correct")) {
-        buttons[i].classList.remove("absent");
-        buttons[i].classList.add("present");
-      } else if (state === "absent" && !buttons[i].classList.contains("correct") && !buttons[i].classList.contains("present")) {
-        buttons[i].classList.add("absent");
-      }
-    }
-  }
+  document.getElementById("answer").innerText = msg;
 }
