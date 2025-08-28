@@ -1,3 +1,7 @@
+    body {
+        zoom: 90%; /* Sets the zoom level to 120% */
+    }
+
 /* ========== Base ========== */
 * { box-sizing: border-box; }
 body {
@@ -8,7 +12,8 @@ body {
   background: #f4f4f4;
   color: #222;
 }
-#title { margin: 0 0 6px; }
+#title { margin: 0 0 6px; font-size: 60px;}
+#desc { margin: 0 0 6px; font-size: 15px;}
 hr { max-width: 1100px; border: none; border-top: 1px solid #ddd; }
 
 /* ========== Difficulty row (two inline cards) ========== */
@@ -153,7 +158,8 @@ hr { max-width: 1100px; border: none; border-top: 1px solid #ddd; }
 .choice-btn.absent,  .op-btn.absent  { background-color: #787c7e !important; color: white !important; border-color: #787c7e !important; }
 
 /* ========== Target / Pattern / Message ========== */
-#target, #choices { margin: 6px 0; }
+#target, #choices { margin: 6px 0;}
+#target {font-size: 40px; font-weight: bold;}
 #answer { margin-top: 18px; }
 
 /* ========== Responsive ========== */
