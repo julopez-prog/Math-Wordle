@@ -1,171 +1,172 @@
-/* ===============================
-   Base Styles for the Page
-   ================================ */
+/* ========== Base ========== */
+* { box-sizing: border-box; }
 body {
   font-family: Arial, Helvetica, sans-serif;
   text-align: center;
   margin: 0;
   padding: 20px;
   background: #f4f4f4;
+  color: #222;
 }
+#title { margin: 0 0 6px; }
+hr { max-width: 1100px; border: none; border-top: 1px solid #ddd; }
 
-/* ===============================
-   Game Container
-   ================================ */
+/* ========== Difficulty row (two inline cards) ========== */
+#difficultyContainer {
+  display: flex;
+  justify-content: center;
+  align-items: stretch;
+  gap: 28px;
+  margin: 18px auto 10px;
+  flex-wrap: wrap;
+  max-width: 1100px;
+}
+.difficulty-card {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0,0,0,.08);
+  padding: 14px 16px;
+  width: clamp(260px, 32vw, 420px);
+}
+.difficulty-btn {
+  background: #4a90e2;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 22px;
+  font-size: 18px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background .15s ease;
+  margin-bottom: 8px;
+}
+.difficulty-btn:hover { background: #357abf; }
+.desc { font-size: 14px; color: #555; margin: 0; }
+
+/* Game row */
 #gameContainer {
   display: flex;
   justify-content: center;
   align-items: flex-start;
-  gap: 60px;
-  margin-top: 20px;
-  flex-wrap: wrap;
+  gap: 40px;          /* more breathing room */
+  margin: 8px auto 0;
+  max-width: 1600px;
+  padding: 0 10px;
+  flex-wrap: nowrap;  /* ✅ stay inline */
 }
 
-/* ===============================
-   Board
-   ================================ */
+#board,
+#keypad { flex: 0 0 auto; }  /* prevent flex shrinking (no overlay) */
+
+/* ========== Board ========== */
+/* 8 narrow cols (7 tokens + "=") + 1 wide result col (stays aligned) */
 #board {
-  --cols: 10;
   display: grid;
-  grid-template-columns: repeat(var(--cols), 72px);
+  grid-template-columns: repeat(8, 72px) 240px; /* last col = wide result */
   gap: 8px;
   justify-content: center;
-  margin: 0 auto;
 }
-
-/* ===============================
-   Tiles
-   ================================ */
 .tile {
   border: 2px solid lightgray;
   width: 72px;
   height: 72px;
-  display: inline-flex;
-  justify-content: center;
-  align-items: center;
-  font-weight: bold;
-  font-size: 22px;
-  box-sizing: border-box;
-}
-
-.result-tile {
-  width: 300px;
-  height: 72px;
   display: flex;
   justify-content: center;
   align-items: center;
-  font-size: 22px;
   font-weight: bold;
-  box-sizing: border-box;
+  font-size: 22px;
+  background: #fff;
+  border-radius: 6px;
+}
+.red-tile {
+  background: #ff4c4c;
+  color: #fff;
+  border-color: #fff;
+}
+.result-tile {
+  width: 240px !important;  /* ✅ fix result tile width */
 }
 
-/* Feedback colors */
-.correct { background-color: #6AAA64; color: white; border-color: white; }
-.present { background-color: #C9B458; color: white; border-color: white; }
-.absent  { background-color: #787C7E; color: white; border-color: white; }
 
-/* ===============================
-   Keypad
-   ================================ */
+/* Wordle feedback colors */
+.correct { background-color: #6AAA64 !important; color: white !important; border-color: white !important; }
+.present { background-color: #C9B458 !important; color: white !important; border-color: white !important; }
+.absent  { background-color: #787C7E !important; color: white !important; border-color: white !important; }
+
+/* Flip animation */
+.tile.flip { animation: flip 0.6s ease forwards; }
+@keyframes flip {
+  0%   { transform: rotateX(0deg); }
+  50%  { transform: rotateX(90deg); }
+  100% { transform: rotateX(0deg); }
+}
+
+/* ========== Keypad ========== */
+/* Base (Easy) — compact, vertical */
 #keypad {
-  width: 320px;
+  width: 360px;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: stretch;
+  gap: 14px;
   background: #fafafa;
-  padding: 16px;
+  padding: 14px;
   border-radius: 12px;
   box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-  margin: 0 auto;
 }
 
-.pad-group { 
-  margin: 10px 0;
-  width: 100%;
+.pad-group h3 {
+  margin: 0 0 6px;
+  font-size: 16px;
+  font-weight: 700;
 }
-
-.pad-group h3 { 
-  margin: 8px 0 6px;
-  font-size: 18px;
-}
-
 .pad {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr); /* 4-wide on Easy */
   gap: 8px;
-  justify-content: center;
 }
-
 .choice-btn, .op-btn, .action-btn {
-  min-width: 70px;
-  height: 50px;
+  width: 100%;
+  height: 44px;
   padding: 0 10px;
-  font-size: 18px;
-  font-weight: bold;
+  font-size: 16px;
+  font-weight: 700;
   border: 2px solid #ccc;
   border-radius: 8px;
   background: #f7f7f7;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: background .15s ease;
+}
+.choice-btn:hover, .op-btn:hover, .action-btn:hover { background: #eaeaea; }
+.action-btn.primary { background: #4a90e2; color: #fff; border-color: #4a90e2; }
+.pad-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr; /* Backspace | Clear | Enter */
+  gap: 10px;
 }
 
-.choice-btn:hover, .op-btn:hover, .action-btn:hover {
-  background: #eaeaea;
-}
 
-.choice-btn:disabled { 
-  opacity: 0.45;
-  cursor: not-allowed;
-}
 
-.op-btn { min-width: 70px; }
+/* Keypad color feedback */
+.choice-btn.correct, .op-btn.correct { background-color: #6aaa64 !important; color: white !important; border-color: #6aaa64 !important; }
+.choice-btn.present, .op-btn.present { background-color: #c9b458 !important; color: white !important; border-color: #c9b458 !important; }
+.choice-btn.absent,  .op-btn.absent  { background-color: #787c7e !important; color: white !important; border-color: #787c7e !important; }
 
-.pad-actions { 
-  display: flex;
-  gap: 12px; 
-  justify-content: center; 
-  margin-top: 8px; 
-}
+/* ========== Target / Pattern / Message ========== */
+#target, #choices { margin: 6px 0; }
+#answer { margin-top: 18px; }
 
-.action-btn.primary { 
-  background: #6AAA64;
-  color: white;
-  border-color: #6AAA64;
-}
-
-/* Keypad feedback */
-.choice-btn.correct, .op-btn.correct { background-color: #6aaa64; color: white; }
-.choice-btn.present, .op-btn.present { background-color: #c9b458; color: white; }
-.choice-btn.absent,  .op-btn.absent  { background-color: #787c7e; color: white; }
-
-/* ===============================
-   Special Styling for Red Tiles
-   ================================ */
-.red-tile {
-  background-color: #FF4C4C;
-  color: white;
-  border-color: white;
-}
-
-.result-tile {
-  width: 300px;
-  text-align: center;
-  font-size: 22px;
-  box-sizing: border-box;
-}
-
-/* ===============================
-   Responsive
-   ================================ */
-@media (max-width: 768px) {
+/* ========== Responsive ========== */
+/* HARD MODE → keypad becomes wider (not taller) */
+@media (max-width: 980px) {
   #gameContainer {
-    flex-direction: column;
-    align-items: center;
-    gap: 30px;
+    flex-wrap: wrap;   /* ✅ allow stacking only on narrow screens */
+    gap: 20px;
   }
-
-  #keypad {
+  #keypad, #keypad.hard {
     width: 100%;
-    max-width: 400px;
+  }
+  #keypad.hard .pad {
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
   }
 }
