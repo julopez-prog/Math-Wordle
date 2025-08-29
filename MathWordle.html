@@ -12,12 +12,19 @@
   <h5 id="desc">Wordle for Mathematicians</h5>
   <hr />
 
-  <!-- Difficulty (two inline cards) -->
+  <!-- Difficulty (three inline cards) -->
   <div id="difficultyContainer">
     <div class="difficulty-card">
       <button id="easyBtn" class="difficulty-btn">Easy</button>
       <p class="desc">
         This difficulty has 4 basic operators, unrestricted results (the equation does not have to always equal the target), and a simple set of numbers.
+      </p>
+    </div>
+
+    <div class="difficulty-card">
+      <button id="mediumBtn" class="difficulty-btn">Medium</button>
+      <p class="desc">
+        This difficulty has 4 basic operators, restricted results (the equation must always equal the target), and a simple set of numbers.
       </p>
     </div>
 
@@ -29,10 +36,13 @@
     </div>
   </div>
 
+  <!-- ✅ Mini Indicator -->
+  <div id="difficultyIndicator">Mode: Easy</div>
+
   <p id="target"></p>
   <p id="choices"></p>
 
-  <!-- Main game row: board (left) + keypad (right) -->
+  <!-- Main game row -->
   <div id="gameContainer">
     <div id="board" aria-label="game board"></div>
 
