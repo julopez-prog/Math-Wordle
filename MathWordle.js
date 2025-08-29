@@ -28,8 +28,62 @@ let finished = false;
 
 /* ========= Start ========= */
 window.onload = function() {
-  document.getElementById("easyBtn").onclick = () => startGame("easy");
-  document.getElementById("hardBtn").onclick = () => startGame("hard");
+  // Ensure Medium card exists and is placed between Easy and Hard
+  ensureMediumCard();
+
+  document.getElementById("easyBtn").onclick   = () => startGame("easy");
+  document.getElementById("mediumBtn").onclick = () => startGame("medium");
+  document.getElementById("hardBtn").onclick   = () => startGame("hard");
+
+  // default: Easy
+  startGame("easy");
+};
+
+/**
+ * If the HTML doesn't already include a Medium card,
+ * this injects it between Easy and Hard.
+ */
+function ensureMediumCard() {
+  const container = document.getElementById("difficultyContainer");
+  if (!container) return;
+
+  // If there's already a mediumBtn in HTML, do nothing.
+  if (document.getElementById("mediumBtn")) return;
+
+  // Find the two existing cards (easy + hard)
+  const cards = [...container.querySelectorAll(".difficulty-card")];
+  const hardCard = cards.find(card => card.querySelector("#hardBtn"));
+
+  // Build the Medium card
+  const mediumCard = document.createElement("div");
+  mediumCard.className = "difficulty-card";
+
+  const mediumBtn = document.createElement("button");
+  mediumBtn.id = "mediumBtn";
+  mediumBtn.className = "difficulty-btn";
+  mediumBtn.textContent = "Medium";
+
+  const p = document.createElement("p");
+  p.className = "desc";
+  p.textContent = "This difficulty has 4 basic operators, restricted results (the equation must always equal the target), and a simple set of numbers.";
+
+  mediumCard.appendChild(mediumBtn);
+  mediumCard.appendChild(p);
+
+  // Insert Medium card before the hard card (so it's between easy and hard)
+  if (hardCard) {
+    container.insertBefore(mediumCard, hardCard);
+  } else {
+    container.appendChild(mediumCard);
+  }
+}
+
+/* ========= Start ========= */
+window.onload = function() {
+  document.getElementById("easyBtn").onclick   = () => startGame("easy");
+  document.getElementById("mediumBtn").onclick = () => startGame("medium");
+  document.getElementById("hardBtn").onclick   = () => startGame("hard");
+
   // default: Easy
   startGame("easy");
 };
@@ -41,27 +95,45 @@ function startGame(mode) {
   document.getElementById("answer").innerText = "";
   document.getElementById("board").innerHTML = "";
 
+  const keypad = document.getElementById("keypad");
+
   if (mode === "easy") {
     numbers = easyNumbers.slice();
     ops = easyOps.slice();
     restrictToTarget = false;
-    document.getElementById("keypad").classList.remove("hard");
+    keypad.classList.remove("hard");
+    updateDifficultyIndicator("Easy", "easy");
+  } else if (mode === "medium") {
+    numbers = easyNumbers.slice();
+    ops = easyOps.slice();
+    restrictToTarget = true;
+    keypad.classList.remove("hard");
+    updateDifficultyIndicator("Medium", "medium");
   } else {
     numbers = hardNumbers.slice();
     ops = hardOps.slice();
     restrictToTarget = true;
-    document.getElementById("keypad").classList.add("hard");
+    keypad.classList.add("hard");
+    updateDifficultyIndicator("Hard", "hard");
   }
 
-  // pick a target and a valid secret expression that equals it
   TARGET = targets[Math.floor(Math.random() * targets.length)];
-  pickSecret(); // fills `secret` for feedback / solution
+  pickSecret();
 
   document.getElementById("target").innerText = "Target: " + TARGET;
   document.getElementById("choices").innerText = "Pattern: NUM OP NUM OP NUM OP NUM = RESULT";
 
   buildBoard();
   buildKeypad();
+}
+
+/* ========= Mini Indicator ========= */
+function updateDifficultyIndicator(text, cssClass) {
+  const indicator = document.getElementById("difficultyIndicator");
+  indicator.innerText = "Mode: " + text;
+  indicator.className = ""; // reset
+  indicator.id = "difficultyIndicator"; // keep id
+  indicator.classList.add(cssClass);
 }
 
 /* ========= Secret ========= */
@@ -100,8 +172,7 @@ function pickSecret() {
     } catch {}
   }
 
-  // Robust fallback that always equals TARGET (uses only +,-,* and numbers we have)
-  // TARGET (in both modes) is guaranteed to be present in easyNumbers
+  // Robust fallback that always equals TARGET
   secret = [String(TARGET), "+", "1", "-", "1", "*", "1"];
 }
 
@@ -127,7 +198,7 @@ function buildBoard() {
     }
   }
 
-  // minimal key listeners
+  // key listeners
   document.onkeydown = (e) => {
     if (finished) return;
     if (e.key === "Enter") { e.preventDefault(); submit(); }
@@ -241,7 +312,7 @@ function submit() {
   try { val = eval(expr); } catch { val = "invalid"; }
 
   if (restrictToTarget && val !== TARGET) {
-    showMsg(`⚠️ Hard Mode: your equation must equal ${TARGET}. You got ${val}.`);
+    showMsg(`⚠️ This mode requires your equation to equal ${TARGET}. You got ${val}.`);
     return;
   }
 
