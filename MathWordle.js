@@ -30,13 +30,13 @@ const hardOps = ["+","-","*","/","%","**"];
 
 /* ========= Score Store (localStorage) =========
    Handles persistence of scores between sessions.
-   Keeps track of highscore, win count, total tries,
-   and autosave preference.
+   Keeps track of highscore, total cumulative score,
+   win count, total tries, and autosave preference.
 -------------------------------------------------*/
 const ScoreStore = (() => {
-  const KEY = "equatio_scores_v1";
-  const AUTO_KEY = "equatio_auto_save_v1";
-  let data = { highscore: 0, wins: 0, tries: 0 };
+  const KEY = "equatio_scores_v2";
+  const AUTO_KEY = "equatio_auto_save_v2";
+  let data = { highscore: 0, totalScore: 0, wins: 0, tries: 0 };
   let auto = false;
 
   /** Load scores from localStorage */
@@ -64,6 +64,7 @@ const ScoreStore = (() => {
   function exportToText() {
     const txt =
 `highscore=${data.highscore}
+totalScore=${data.totalScore}
 wins=${data.wins}
 tries=${data.tries}
 `;
@@ -80,30 +81,28 @@ tries=${data.tries}
 
   /** Reset scores */
   function reset() {
-    data = { highscore: 0, wins: 0, tries: 0 };
+    data = { highscore: 0, totalScore: 0, wins: 0, tries: 0 };
     save();
   }
 
   return { data, load, save, exportToText, reset, setAuto, get auto() { return auto; } };
 })();
 
-/* ========= Game State =========
-   These variables represent the current round state.
--------------------------------------------------*/
-let numbers = [];          // available numbers this round
-let ops = [];              // available operators this round
-let restrictToTarget = false; // medium/hard require strict equality
-let currentRow = 0;        // current attempt row
-let guess = [];            // active tokens in current guess
-let secret = [];           // secret equation (solution)
-let TARGET;                // target result
-let finished = false;      // whether game is over
-let currentMode = "easy";  // "easy" | "medium" | "hard"
-let scores = ScoreStore.load(); // load persisted scores
+/* ========= Game State ========= */
+let numbers = [];
+let ops = [];
+let restrictToTarget = false;
+let currentRow = 0;
+let guess = [];
+let secret = [];
+let TARGET;
+let finished = false;
+let currentMode = "easy";
+let scores = ScoreStore.load();
 
 /* ========= Init ========= */
 window.onload = function () {
-  ensureMediumCard(); // make sure "Medium" difficulty exists
+  ensureMediumCard();
 
   // Wire difficulty buttons
   document.getElementById("easyBtn").onclick   = () => startGame("easy");
@@ -118,20 +117,15 @@ window.onload = function () {
   if (resetBtn) resetBtn.onclick = () => { ScoreStore.reset(); scores = ScoreStore.load(); updateStats(); };
   if (autoSave) { autoSave.checked = ScoreStore.auto; autoSave.onchange = (e) => ScoreStore.setAuto(e.target.checked); }
 
-  // Default game start
   startGame("easy");
   updateStats();
 };
 
-/**
- * Ensure a "Medium" difficulty card exists in UI.
- * Dynamically inserts if HTML doesn’t provide it.
- */
+/* ========= Ensure Medium Card ========= */
 function ensureMediumCard() {
   const container = document.getElementById("difficultyContainer");
   if (!container) return;
-
-  if (document.getElementById("mediumBtn")) return; // already present
+  if (document.getElementById("mediumBtn")) return;
 
   const cards = [...container.querySelectorAll(".difficulty-card")];
   const hardCard = cards.find(card => card.querySelector("#hardBtn"));
@@ -157,9 +151,7 @@ function ensureMediumCard() {
   mediumBtn.onclick = () => startGame("medium");
 }
 
-/* ========= Start =========
-   Initializes a game round for given difficulty.
--------------------------------------------------*/
+/* ========= Start Game ========= */
 function startGame(mode) {
   finished = false;
   currentRow = 0;
@@ -191,7 +183,7 @@ function startGame(mode) {
   }
 
   TARGET = targets[Math.floor(Math.random() * targets.length)];
-  pickSecret(); // generate secret solution
+  pickSecret();
 
   document.getElementById("target").innerText = "Target: " + TARGET;
   document.getElementById("choices").innerText = "Pattern: NUM OP NUM OP NUM OP NUM = RESULT";
@@ -201,7 +193,7 @@ function startGame(mode) {
   render();
 }
 
-/* ========= Mini Indicator ========= */
+/* ========= Difficulty Indicator ========= */
 function updateDifficultyIndicator(text, cssClass) {
   const indicator = document.getElementById("difficultyIndicator");
   indicator.innerText = "Mode: " + text;
@@ -210,18 +202,13 @@ function updateDifficultyIndicator(text, cssClass) {
   indicator.classList.add(cssClass);
 }
 
-/* ========= Secret =========
-   Generates the secret solution expression that
-   evaluates exactly to TARGET.
--------------------------------------------------*/
+/* ========= Secret Equation ========= */
 function pickSecret() {
   const tries = 60000;
-
   for (let i = 0; i < tries; i++) {
     const nums = [ randFrom(numbers), randFrom(numbers), randFrom(numbers), randFrom(numbers) ];
     const opsPicked = [ randFrom(ops), randFrom(ops), randFrom(ops) ];
     const expr = `${nums[0]}${opsPicked[0]}${nums[1]}${opsPicked[1]}${nums[2]}${opsPicked[2]}${nums[3]}`;
-
     try {
       const v = eval(expr);
       if (Number.isFinite(v) && v === TARGET) {
@@ -230,34 +217,24 @@ function pickSecret() {
       }
     } catch {}
   }
-
-  // fallback guaranteed to equal TARGET
   secret = [String(TARGET), "+", "1", "-", "1", "*", "1"];
 }
-
 function randFrom(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
 
-/* ========= Board =========
-   Constructs the grid of tiles (ROWS x COLS).
--------------------------------------------------*/
+/* ========= Build Board ========= */
 function buildBoard() {
   const board = document.getElementById("board");
   board.innerHTML = "";
-
   for (let r = 0; r < ROWS; r++) {
     for (let c = 0; c < COLS; c++) {
       const tile = document.createElement("div");
       tile.id = `${r}-${c}`;
       tile.className = "tile";
-
       if (c === 7) { tile.innerText = "="; tile.classList.add("red-tile"); }
       if (c === 8) { tile.classList.add("red-tile", "result-tile"); }
-
       board.appendChild(tile);
     }
   }
-
-  // Keyboard bindings
   document.onkeydown = (e) => {
     if (finished) return;
     if (e.key === "Enter") { e.preventDefault(); submit(); }
@@ -265,26 +242,19 @@ function buildBoard() {
   };
 }
 
-/* ========= Keypad =========
-   Creates number/operator/action buttons dynamically.
--------------------------------------------------*/
+/* ========= Build Keypad ========= */
 function buildKeypad() {
   const numWrap = document.getElementById("numberChoices");
   const opWrap = document.getElementById("operatorChoices");
-
   numWrap.innerHTML = "";
   opWrap.innerHTML = "";
-
   numbers.forEach(n => numWrap.appendChild(makeBtn("choice-btn", n, () => add(n))));
   ops.forEach(o => opWrap.appendChild(makeBtn("op-btn", o, () => add(o))));
-
   document.getElementById("backspaceBtn").onclick = backspace;
   document.getElementById("clearBtn").onclick = clearRow;
   document.getElementById("submitBtn").onclick = submit;
-
   document.querySelectorAll("#keypad button").forEach(b => b.disabled = false);
 }
-
 function makeBtn(cls, text, fn) {
   const btn = document.createElement("button");
   btn.className = cls;
@@ -295,24 +265,21 @@ function makeBtn(cls, text, fn) {
 
 /* ========= Input ========= */
 function isOp(t) { return ["+","-","*","/","%","**"].includes(t); }
-
 function add(token) {
   if (finished) return;
-  if (guess.length >= 7) return; // limit 7 slots
-  if (guess.length === 0 && isOp(token)) return; // cannot start with operator
-  if (isOp(token) && isOp(guess[guess.length - 1])) return; // no two operators in a row
-  if (!isOp(token) && guess.length > 0 && !isOp(guess[guess.length - 1])) return; // no two numbers in a row
+  if (guess.length >= 7) return;
+  if (guess.length === 0 && isOp(token)) return;
+  if (isOp(token) && isOp(guess[guess.length - 1])) return;
+  if (!isOp(token) && guess.length > 0 && !isOp(guess[guess.length - 1])) return;
   guess.push(String(token));
   render();
 }
-
 function backspace() {
   if (!finished && guess.length > 0) {
     guess.pop();
     render();
   }
 }
-
 function clearRow() {
   if (!finished) {
     guess = [];
@@ -320,14 +287,11 @@ function clearRow() {
   }
 }
 
-/* ========= Render =========
-   Updates tiles with current guess + live eval result.
--------------------------------------------------*/
+/* ========= Render ========= */
 function render() {
   for (let c = 0; c < COLS; c++) {
     const tile = document.getElementById(`${currentRow}-${c}`);
     if (!tile) continue;
-
     if (c < 7) {
       tile.innerText = guess[c] || "";
     } else if (c === 7) {
@@ -340,10 +304,7 @@ function render() {
   }
 }
 
-/* ========= Guess Validate & Submit =========
-   Submits a guess, validates against secret,
-   applies feedback, handles scoring and end states.
--------------------------------------------------*/
+/* ========= Guess Validation & Submission ========= */
 function validGuess(tokens) {
   if (tokens.length !== 7) return false;
   for (let i = 0; i < tokens.length; i++) {
@@ -352,42 +313,34 @@ function validGuess(tokens) {
   }
   return true;
 }
-
 function basePointsForMode() {
   if (currentMode === "hard")   return 50;
   if (currentMode === "medium") return 25;
-  return 10; // easy
+  return 10;
 }
 
 function submit() {
   if (finished) return;
-
   if (!validGuess(guess)) {
     showMsg("⚠️ Follow pattern NUM OP NUM OP NUM OP NUM");
     return;
   }
-
   const expr = guess.join("");
   let val;
   try { val = eval(expr); } catch { val = "invalid"; }
-
   if (restrictToTarget && val !== TARGET) {
     showMsg(`⚠️ This mode requires your equation to equal ${TARGET}. You got ${val}.`);
     return;
   }
 
-  // Feedback (Wordle style)
   const feedback = Array(7).fill("absent");
   const secretCopy = secret.slice();
-
-  // Step 1: Mark exact matches
   for (let i = 0; i < 7; i++) {
     if (guess[i] === secretCopy[i]) {
       feedback[i] = "correct";
       secretCopy[i] = null;
     }
   }
-  // Step 2: Mark present (misplaced) tokens
   for (let i = 0; i < 7; i++) {
     if (feedback[i] !== "correct") {
       const idx = secretCopy.indexOf(guess[i]);
@@ -397,8 +350,6 @@ function submit() {
       }
     }
   }
-
-  // Animate + apply styles
   for (let c = 0; c < 7; c++) {
     const tile = document.getElementById(`${currentRow}-${c}`);
     const state = feedback[c];
@@ -414,7 +365,6 @@ function submit() {
   }
 
   const allCorrect = feedback.every(s => s === "correct");
-
   if (allCorrect) {
     const base = basePointsForMode();
     const multiplier = ROWS - currentRow;
@@ -422,6 +372,7 @@ function submit() {
 
     scores.tries++;
     scores.wins++;
+    scores.totalScore += earned;              // ✅ add cumulative
     if (earned > scores.highscore) scores.highscore = earned;
     ScoreStore.save();
     updateStats();
@@ -429,22 +380,19 @@ function submit() {
     showMsg(`🎉 Correct! ${expr} = ${TARGET} | +${earned} points`);
     finished = true;
     document.querySelectorAll("#keypad button").forEach(b => b.disabled = true);
-
     if (ScoreStore.auto) ScoreStore.exportToText();
     return;
   }
 
-  // If not correct, provide feedback
   if (!restrictToTarget) {
     showMsg(`✅ ${expr} = ${val}`);
   } else {
     showMsg(`❌ ${expr} = ${val} — keep trying for ${TARGET}`);
   }
-
   nextRow();
 }
 
-/** Update keypad button colors based on token feedback */
+/* ========= Update Keypad ========= */
 function updateKeypad(token, state) {
   const buttons = document.querySelectorAll("#keypad button");
   buttons.forEach(btn => {
@@ -462,15 +410,14 @@ function updateKeypad(token, state) {
   });
 }
 
-/** Advance to next row, handle loss state */
+/* ========= Next Row / Game Over ========= */
 function nextRow() {
   currentRow++;
   guess = [];
   if (currentRow >= ROWS) {
-    showMsg(`Game Over! Secret was: ${secret.join("    ")} = ${TARGET}`);
+    showMsg(`Game Over! Secret was: ${secret.join(" ")} = ${TARGET}`);
     finished = true;
     document.querySelectorAll("#keypad button").forEach(b => b.disabled = true);
-
     scores.tries++;
     ScoreStore.save();
     updateStats();
@@ -480,15 +427,14 @@ function nextRow() {
   }
 }
 
-/** Show status messages below board */
+/* ========= UI Updates ========= */
 function showMsg(msg) {
   document.getElementById("answer").innerText = msg;
 }
-
-/** Refresh stats panel in UI */
 function updateStats() {
   const s = scores;
   document.getElementById("highscore").innerText = s.highscore;
   document.getElementById("wins").innerText = s.wins;
   document.getElementById("tries").innerText = s.tries;
+  document.getElementById("totalScore").innerText = s.totalScore;
 }
