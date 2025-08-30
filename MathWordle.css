@@ -1,38 +1,64 @@
+/* ============================================================
+   GLOBAL STYLESHEET FOR MATH WORDLE GAME
+   ------------------------------------------------------------
+   This file controls the layout, look, and feel of the game.
+   Each section is documented to describe its purpose.
+   ============================================================ */
+
+/* ----- Global Zoom ----- 
+   Scales the entire document by 75% for better fit. */
 body {
   zoom: 75%;
 }
 
-/* ========== Base ========== */
+/* ============================================================
+   ========== BASE / GLOBAL SETTINGS ==========
+   ============================================================ */
 * { box-sizing: border-box; }
+
 body {
-  font-family: Arial, Helvetica, sans-serif;
-  text-align: center;
-  margin: 0;
-  padding: 20px;
-  background: #f4f4f4;
-  color: #222;
+  font-family: Arial, Helvetica, sans-serif; /* Default font family */
+  text-align: center;                       /* Center align text */
+  margin: 0;                                /* Remove default margin */
+  padding: 20px;                            /* Base page padding */
+  background: #f4f4f4;                      /* Light gray background */
+  color: #222;                              /* Default text color */
 }
+
+/* Title + Description */
 #title { margin: 0 0 6px; font-size: 60px; }
 #desc  { margin: 0 0 6px; font-size: 15px; }
-hr     { max-width: 1100px; border: none; border-top: 1px solid #ddd; }
 
-/* ========== Difficulty row (cards) ========== */
-#difficultyContainer {
-  display: flex;
-  justify-content: center;
-  align-items: stretch;
-  gap: 28px;
-  margin: 18px auto 10px;
-  flex-wrap: wrap;
-  max-width: 1100px;
+/* Divider line under title */
+hr { 
+  max-width: 1100px; 
+  border: none; 
+  border-top: 1px solid #ddd; 
 }
+
+/* ============================================================
+   ========== DIFFICULTY SELECTION (CARDS) ==========
+   ============================================================ */
+#difficultyContainer {
+  display: flex;                   /* Flex row for difficulty cards */
+  justify-content: center; 
+  align-items: stretch;
+  gap: 28px;                       /* Space between cards */
+  margin: 18px auto 10px;
+  flex-wrap: wrap;                 /* Wrap if screen is small */
+  max-width: 1100px; 
+}
+
+/* Individual difficulty card */
 .difficulty-card {
   background: #fff;
   border-radius: 12px;
   box-shadow: 0 4px 10px rgba(0,0,0,.08);
   padding: 14px 16px;
-  width: clamp(260px, 32vw, 420px);
+  width: clamp(260px, 32vw, 420px); /* Responsive width */
 }
+
+/* Buttons inside cards */
 .difficulty-btn {
   background: #4a90e2;
   color: #fff;
@@ -46,9 +72,10 @@ hr     { max-width: 1100px; border: none; border-top: 1px solid #ddd; }
   margin-bottom: 8px;
 }
 .difficulty-btn:hover { background: #357abf; }
+
 .desc { font-size: 14px; color: #555; margin: 0; }
 
-/* ✅ Mini Indicator */
+/* Mini indicator showing active difficulty */
 #difficultyIndicator {
   margin: 10px 0 20px;
   font-weight: bold;
@@ -58,30 +85,38 @@ hr     { max-width: 1100px; border: none; border-top: 1px solid #ddd; }
   display: inline-block;
   color: #fff;
 }
-#difficultyIndicator.easy   { background: #0ddd06; }
-#difficultyIndicator.medium { background: #f39c12; }
-#difficultyIndicator.hard   { background: #e74c3c; }
+#difficultyIndicator.easy   { background: #0ddd06; } /* Green for easy */
+#difficultyIndicator.medium { background: #f39c12; } /* Orange for medium */
+#difficultyIndicator.hard   { background: #e74c3c; } /* Red for hard */
 
-/* Game row */
+/* ============================================================
+   ========== GAME CONTAINER (BOARD + KEYPAD) ==========
+   ============================================================ */
 #gameContainer {
   display: flex;
   justify-content: center;
   align-items: flex-start;
-  gap: 40px;
+  gap: 40px;                  /* Board <-> Keypad spacing */
   margin: 8px auto 0;
   max-width: 1600px;
   padding: 0 10px;
   flex-wrap: nowrap;
 }
+
+/* Prevent board and keypad from shrinking */
 #board, #keypad { flex: 0 0 auto; }
 
-/* ========== Board ========== */
+/* ============================================================
+   ========== GAME BOARD (Tiles) ==========
+   ============================================================ */
 #board {
   display: grid;
-  grid-template-columns: repeat(8, 72px) 240px;
+  grid-template-columns: repeat(8, 72px) 240px; /* 8 tiles + 1 result tile */
   gap: 8px;
   justify-content: center;
 }
+
+/* Standard tile */
 .tile {
   border: 2px solid lightgray;
   width: 72px;
@@ -94,17 +129,23 @@ hr     { max-width: 1100px; border: none; border-top: 1px solid #ddd; }
   background: #fff;
   border-radius: 6px;
 }
+
+/* Red tile for invalid/wrong */
 .red-tile {
   background: #ff4c4c;
   color: #fff;
   border-color: #fff;
 }
+
+/* Wider tile used for equation results */
 .result-tile { width: 240px !important; }
 
+/* Tile feedback states (like Wordle colors) */
 .correct { background-color: #6AAA64 !important; color: white !important; border-color: white !important; }
 .present { background-color: #C9B458 !important; color: white !important; border-color: white !important; }
 .absent  { background-color: #787C7E !important; color: white !important; border-color: white !important; }
 
+/* Flip animation on tile reveal */
 .tile.flip { animation: flip 0.6s ease forwards; }
 @keyframes flip {
   0%   { transform: rotateX(0deg); }
@@ -112,7 +153,9 @@ hr     { max-width: 1100px; border: none; border-top: 1px solid #ddd; }
   100% { transform: rotateX(0deg); }
 }
 
-/* ========== Keypad ========== */
+/* ============================================================
+   ========== KEYPAD ==========
+   ============================================================ */
 #keypad {
   width: 360px;
   display: flex;
@@ -124,8 +167,22 @@ hr     { max-width: 1100px; border: none; border-top: 1px solid #ddd; }
   border-radius: 12px;
   box-shadow: 0 4px 10px rgba(0,0,0,0.1);
 }
-.pad-group h3 { margin: 0 0 6px; font-size: 16px; font-weight: 700; }
-.pad { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+
+/* Section headings inside keypad */
+.pad-group h3 { 
+  margin: 0 0 6px; 
+  font-size: 16px; 
+  font-weight: 700; 
+}
+
+/* Grid for buttons */
+.pad { 
+  display: grid; 
+  grid-template-columns: repeat(4, 1fr); 
+  gap: 8px; 
+}
+
+/* Generic button styles (numbers, operators, actions) */
 .choice-btn, .op-btn, .action-btn {
   width: 100%; height: 44px;
   padding: 0 10px;
@@ -137,18 +194,34 @@ hr     { max-width: 1100px; border: none; border-top: 1px solid #ddd; }
   transition: background .15s ease;
 }
 .choice-btn:hover, .op-btn:hover, .action-btn:hover { background: #eaeaea; }
-.action-btn.primary { background: #4a90e2; color: #fff; border-color: #4a90e2; }
-.pad-actions { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
 
+/* Primary action button (e.g., Enter) */
+.action-btn.primary { 
+  background: #4a90e2; 
+  color: #fff; 
+  border-color: #4a90e2; 
+}
+
+/* Layout for bottom action buttons */
+.pad-actions { 
+  display: grid; 
+  grid-template-columns: 1fr 1fr 1fr; 
+  gap: 10px; 
+}
+
+/* Color feedback for keypad buttons */
 .choice-btn.correct, .op-btn.correct { background-color: #6aaa64 !important; color: white !important; border-color: #6aaa64 !important; }
 .choice-btn.present, .op-btn.present { background-color: #c9b458 !important; color: white !important; border-color: #c9b458 !important; }
 .choice-btn.absent,  .op-btn.absent  { background-color: #787c7e !important; color: white !important; border-color: #787c7e !important; }
 
+/* Target value + choices display */
 #target, #choices { margin: 6px 0; }
 #target { font-size: 40px; font-weight: bold; }
 #answer { margin-top: 18px; }
 
-/* ========== Scores Panel ========== */
+/* ============================================================
+   ========== STATS PANEL ==========
+   ============================================================ */
 #stats {
   margin: 24px auto 0;
   max-width: 700px;
@@ -157,19 +230,24 @@ hr     { max-width: 1100px; border: none; border-top: 1px solid #ddd; }
   padding: 14px;
   box-shadow: 0 4px 10px rgba(0,0,0,.08);
 }
+
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 10px;
 }
+
+/* Individual stat box */
 .stat {
   background: #f7f7f7;
   border: 1px solid #e6e6e6;
   border-radius: 10px;
   padding: 10px;
 }
-.stat span { display: block; font-size: 12px; color: #666; margin-bottom: 4px; }
+.stat span  { display: block; font-size: 12px; color: #666; margin-bottom: 4px; }
 .stat strong { font-size: 24px; }
+
+/* Stats actions row (share, reset, etc.) */
 .stats-actions {
   margin-top: 12px;
   display: flex;
@@ -177,11 +255,20 @@ hr     { max-width: 1100px; border: none; border-top: 1px solid #ddd; }
   gap: 10px;
   justify-content: center;
 }
+
+/* Autosave info text */
 .autosave { font-size: 14px; color: #555; }
 
-/* Responsive */
+/* ============================================================
+   ========== RESPONSIVE RULES ==========
+   ============================================================ */
 @media (max-width: 980px) {
+  /* Stack board and keypad vertically on smaller screens */
   #gameContainer { flex-wrap: wrap; gap: 20px; }
+
+  /* Expand keypad full width */
   #keypad, #keypad.hard { width: 100%; }
+
+  /* Dynamic button layout for hard mode keypad */
   #keypad.hard .pad { grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); }
 }
