@@ -2,61 +2,113 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>Math Wordle</title>
+  <title>Math Wordle — Equatio</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+  
+  <!-- ===============================
+       Stylesheet and Scripts
+       ===============================
+       - MathWordle.css: handles UI layout, colors, grid, keypad, etc.
+       - MathWordle.js: contains game logic (board rendering, keypad input, scoring).
+       Script is loaded with "defer" to ensure DOM is ready first.
+  -->
   <link rel="stylesheet" href="MathWordle.css" />
-  <script src="MathWordle.js" defer></script>
+  <script defer src="MathWordle.js"></script>
 </head>
+
 <body>
+  <!-- ===============================
+       Title and Tagline
+       =============================== -->
   <b><h1 id="title">Equatio</h1></b>
   <h5 id="desc">Wordle for Mathematicians</h5>
   <hr />
 
-  <!-- Difficulty (three inline cards) -->
+  <!-- ===============================
+       Difficulty Selection
+       ===============================
+       - Three cards: Easy, Medium, Hard.
+       - Each card contains:
+         • A button to select difficulty.
+         • A description of rules/features.
+       - Connected to JS event listeners that set operators, number pools,
+         and whether guesses must equal the target.
+  -->
   <div id="difficultyContainer">
     <div class="difficulty-card">
       <button id="easyBtn" class="difficulty-btn">Easy</button>
       <p class="desc">
-        This difficulty has 4 basic operators, unrestricted results (the equation does not have to always equal the target), and a simple set of numbers.
+        This difficulty has 4 basic operators, unrestricted results
+        (the equation does not have to always equal the target),
+        and a simple set of numbers.
       </p>
     </div>
 
     <div class="difficulty-card">
       <button id="mediumBtn" class="difficulty-btn">Medium</button>
       <p class="desc">
-        This difficulty has 4 basic operators, restricted results (the equation must always equal the target), and a simple set of numbers.
+        This difficulty has 4 basic operators, restricted results
+        (the equation must always equal the target),
+        and a simple set of numbers.
       </p>
     </div>
 
     <div class="difficulty-card">
       <button id="hardBtn" class="difficulty-btn">Hard</button>
       <p class="desc">
-        This difficulty has 6 operators (% and **), restricted results (your guess must always equal the target), and added numbers including fractions and negatives. <b>Calculating physically is recommend</b>
+        This difficulty has 6 operators (% and **), restricted results
+        (your guess must always equal the target), and added numbers
+        including fractions and negatives.
+        <b>Calculating physically is recommend</b>
       </p>
     </div>
   </div>
 
-  <!-- ✅ Mini Indicator -->
-  <div id="difficultyIndicator">Mode: Easy</div>
+  <!-- ===============================
+       Difficulty Indicator
+       ===============================
+       - Displays current difficulty mode.
+       - Updated dynamically by JS when the player switches difficulty.
+  -->
+  <div id="difficultyIndicator" class="easy">Mode: Easy</div>
 
+  <!-- ===============================
+       Game Metadata Display
+       ===============================
+       - Target: number players must try to reach.
+       - Choices: lists available numbers/operators.
+       Both values are injected by JS based on difficulty.
+  -->
   <p id="target"></p>
   <p id="choices"></p>
 
-  <!-- Main game row -->
+  <!-- ===============================
+       Game Container
+       ===============================
+       Holds:
+       • Board (tiles for each guess row).
+       • Keypad (virtual input for numbers & operators).
+  -->
   <div id="gameContainer">
+
+    <!-- Game Board -->
     <div id="board" aria-label="game board"></div>
 
+    <!-- Keypad Section -->
     <div id="keypad" aria-label="keypad">
+      <!-- Numbers -->
       <div class="pad-group">
         <h3>Numbers</h3>
         <div id="numberChoices" class="pad"></div>
       </div>
 
+      <!-- Operators -->
       <div class="pad-group">
         <h3>Operators</h3>
         <div id="operatorChoices" class="pad"></div>
       </div>
 
+      <!-- Action Buttons -->
       <div class="pad-actions">
         <button id="backspaceBtn" class="action-btn">⌫ Backspace</button>
         <button id="clearBtn" class="action-btn">Clear</button>
@@ -65,6 +117,43 @@
     </div>
   </div>
 
+  <!-- ===============================
+       Feedback / Answer Output
+       ===============================
+       - Displays messages such as:
+         • "Correct! Equation = Target"
+         • "Game Over! Secret was ..."
+       - Updated by JS after each guess.
+  -->
   <h2 id="answer" aria-live="polite"></h2>
+
+  <!-- ===============================
+       Scores Panel
+       ===============================
+       - Tracks stats across games:
+         • Highscore (best point run).
+         • Wins (successful games).
+         • Tries (total games played).
+       - Buttons:
+         • Save scores to "scores.txt".
+         • Reset all stats.
+         • Enable auto-save after each game.
+       - Controlled by JS functions + optional file handling.
+  -->
+  <div id="stats" aria-live="polite">
+    <div class="stats-grid">
+      <div class="stat"><span>Highscore</span><strong id="highscore">0</strong></div>
+      <div class="stat"><span>Wins</span><strong id="wins">0</strong></div>
+      <div class="stat"><span>Tries</span><strong id="tries">0</strong></div>
+    </div>
+
+    <div class="stats-actions">
+      <button id="saveScoresBtn" class="action-btn">Save scores.txt</button>
+      <button id="resetScoresBtn" class="action-btn">Reset Scores</button>
+      <label class="autosave">
+        <input type="checkbox" id="autoSave"> Auto-save after each game
+      </label>
+    </div>
+  </div>
 </body>
 </html>
