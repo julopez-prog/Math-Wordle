@@ -1,5 +1,5 @@
 body {
-    zoom: 85%;
+  zoom: 75%;
 }
 
 /* ========== Base ========== */
@@ -12,9 +12,9 @@ body {
   background: #f4f4f4;
   color: #222;
 }
-#title { margin: 0 0 6px; font-size: 60px;}
-#desc { margin: 0 0 6px; font-size: 15px;}
-hr { max-width: 1100px; border: none; border-top: 1px solid #ddd; }
+#title { margin: 0 0 6px; font-size: 60px; }
+#desc  { margin: 0 0 6px; font-size: 15px; }
+hr     { max-width: 1100px; border: none; border-top: 1px solid #ddd; }
 
 /* ========== Difficulty row (cards) ========== */
 #difficultyContainer {
@@ -58,9 +58,9 @@ hr { max-width: 1100px; border: none; border-top: 1px solid #ddd; }
   display: inline-block;
   color: #fff;
 }
-#difficultyIndicator.easy { background: #0ddd06; }
+#difficultyIndicator.easy   { background: #0ddd06; }
 #difficultyIndicator.medium { background: #f39c12; }
-#difficultyIndicator.hard { background: #e74c3c; }
+#difficultyIndicator.hard   { background: #e74c3c; }
 
 /* Game row */
 #gameContainer {
@@ -99,9 +99,7 @@ hr { max-width: 1100px; border: none; border-top: 1px solid #ddd; }
   color: #fff;
   border-color: #fff;
 }
-.result-tile {
-  width: 240px !important;
-}
+.result-tile { width: 240px !important; }
 
 .correct { background-color: #6AAA64 !important; color: white !important; border-color: white !important; }
 .present { background-color: #C9B458 !important; color: white !important; border-color: white !important; }
@@ -146,9 +144,40 @@ hr { max-width: 1100px; border: none; border-top: 1px solid #ddd; }
 .choice-btn.present, .op-btn.present { background-color: #c9b458 !important; color: white !important; border-color: #c9b458 !important; }
 .choice-btn.absent,  .op-btn.absent  { background-color: #787c7e !important; color: white !important; border-color: #787c7e !important; }
 
-#target, #choices { margin: 6px 0;}
-#target {font-size: 40px; font-weight: bold;}
+#target, #choices { margin: 6px 0; }
+#target { font-size: 40px; font-weight: bold; }
 #answer { margin-top: 18px; }
+
+/* ========== Scores Panel ========== */
+#stats {
+  margin: 24px auto 0;
+  max-width: 700px;
+  background: #fff;
+  border-radius: 12px;
+  padding: 14px;
+  box-shadow: 0 4px 10px rgba(0,0,0,.08);
+}
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+.stat {
+  background: #f7f7f7;
+  border: 1px solid #e6e6e6;
+  border-radius: 10px;
+  padding: 10px;
+}
+.stat span { display: block; font-size: 12px; color: #666; margin-bottom: 4px; }
+.stat strong { font-size: 24px; }
+.stats-actions {
+  margin-top: 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  justify-content: center;
+}
+.autosave { font-size: 14px; color: #555; }
 
 /* Responsive */
 @media (max-width: 980px) {
