@@ -66,29 +66,18 @@
 
   <!-- ===============================
        Difficulty Indicator
-       ===============================
-       - Displays current difficulty mode.
-       - Updated dynamically by JS when the player switches difficulty.
-  -->
+       =============================== -->
   <div id="difficultyIndicator" class="easy">Mode: Easy</div>
 
   <!-- ===============================
        Game Metadata Display
-       ===============================
-       - Target: number players must try to reach.
-       - Choices: lists available numbers/operators.
-       Both values are injected by JS based on difficulty.
-  -->
+       =============================== -->
   <p id="target"></p>
   <p id="choices"></p>
 
   <!-- ===============================
        Game Container
-       ===============================
-       Holds:
-       • Board (tiles for each guess row).
-       • Keypad (virtual input for numbers & operators).
-  -->
+       =============================== -->
   <div id="gameContainer">
 
     <!-- Game Board -->
@@ -119,12 +108,7 @@
 
   <!-- ===============================
        Feedback / Answer Output
-       ===============================
-       - Displays messages such as:
-         • "Correct! Equation = Target"
-         • "Game Over! Secret was ..."
-       - Updated by JS after each guess.
-  -->
+       =============================== -->
   <h2 id="answer" aria-live="polite"></h2>
 
   <!-- ===============================
@@ -145,6 +129,7 @@
       <div class="stat"><span>Highscore</span><strong id="highscore">0</strong></div>
       <div class="stat"><span>Wins</span><strong id="wins">0</strong></div>
       <div class="stat"><span>Tries</span><strong id="tries">0</strong></div>
+      <div class="stat"><span>Total Score</span><strong id="totalScore">0</strong></div>
     </div>
 
     <div class="stats-actions">
