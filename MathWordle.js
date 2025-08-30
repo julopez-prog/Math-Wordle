@@ -2,14 +2,14 @@
 const ROWS = 7; // attempts
 const COLS = 9; // 7 tokens + "=" + result
 
-const targets = [10,20,40,50,60,80,100,150,200,250];
+const targets = [0, 5, 10, 20, 25, 30, 40, 50, 60, 70, 75, 80, 90, 100, 150, 175, 200, 250, 400, 625, 1000, 100000];
 
-const easyNumbers = [1,2,3,4,5,8,10,15,20,25,30,40,50,60,75,100,150,200,250];
+const easyNumbers = [1,2,3,4,5, 6, 7, 8, 9, 10,15,20,25,30,40,50,60,75,100,150,200,250, 400];
 
 const hardNumbers = [
   ...easyNumbers,
-  "1/2","1/3","1/4","1/5","1/10",
-  0, -1, -2, -5, -10
+  1000, "(1/2)", "(1/3)","(1/4)", "(1/5)", 
+  0, "(-1)", "(-2)", "(-5)", "(-10)"
 ];
 
 const easyOps = ["+","-","*","/"];
@@ -395,7 +395,7 @@ function nextRow() {
   currentRow++;
   guess = [];
   if (currentRow >= ROWS) {
-    showMsg(`Game Over! Secret was: ${secret.join("")} = ${TARGET}`);
+    showMsg(`Game Over! Secret was: ${secret.join("    ")} = ${TARGET}`);
     endGame();
   } else {
     render();
