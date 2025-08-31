@@ -1,64 +1,63 @@
-/* ============================================================
-   GLOBAL STYLESHEET FOR MATH WORDLE GAME
-   ------------------------------------------------------------
-   This file controls the layout, look, and feel of the game.
-   Each section is documented to describe its purpose.
-   ============================================================ */
-
-/* ----- Global Zoom ----- 
-   Scales the entire document by 75% for better fit. */
+/* =========================================================
+   Global Scaling
+   - Zooms the entire body content down to 75% by default
+   - Makes everything shrink proportionally on load
+   ========================================================= */
 body {
   zoom: 75%;
 }
 
-/* ============================================================
-   ========== BASE / GLOBAL SETTINGS ==========
-   ============================================================ */
+/* =========================================================
+   Base Styles
+   ========================================================= */
 * { box-sizing: border-box; }
 
 body {
-  font-family: Arial, Helvetica, sans-serif; /* Default font family */
-  text-align: center;                       /* Center align text */
-  margin: 0;                                /* Remove default margin */
-  padding: 20px;                            /* Base page padding */
-  background: #f4f4f4;                      /* Light gray background */
-  color: #222;                              /* Default text color */
+  font-family: Arial, Helvetica, sans-serif; /* Clean sans-serif font */
+  text-align: center;                        /* Center-aligns all text */
+  margin: 0;
+  padding: 20px;
+  background: #f4f4f4;                       /* Light gray background */
+  color: #222;                               /* Dark gray text */
 }
 
-/* Title + Description */
-#title { margin: 0 0 6px; font-size: 60px; }
-#desc  { margin: 0 0 6px; font-size: 15px; }
+#title { 
+  margin: 0 0 6px; 
+  font-size: 60px;                           /* Big game title */
+}
 
-/* Divider line under title */
+#desc  { 
+  margin: 0 0 6px; 
+  font-size: 15px;                           /* Small description text */
+}
+
 hr { 
   max-width: 1100px; 
   border: none; 
-  border-top: 1px solid #ddd; 
+  border-top: 1px solid #ddd;                /* Light divider line */
 }
 
-/* ============================================================
-   ========== DIFFICULTY SELECTION (CARDS) ==========
-   ============================================================ */
+/* =========================================================
+   Difficulty Selection Row (cards + buttons)
+   ========================================================= */
 #difficultyContainer {
-  display: flex;                   /* Flex row for difficulty cards */
-  justify-content: center; 
+  display: flex;
+  justify-content: center;
   align-items: stretch;
-  gap: 28px;                       /* Space between cards */
+  gap: 28px;
   margin: 18px auto 10px;
-  flex-wrap: wrap;                 /* Wrap if screen is small */
-  max-width: 1100px; 
+  flex-wrap: wrap;                           /* Allows wrapping on smaller screens */
+  max-width: 1100px;
 }
 
-/* Individual difficulty card */
 .difficulty-card {
   background: #fff;
   border-radius: 12px;
   box-shadow: 0 4px 10px rgba(0,0,0,.08);
   padding: 14px 16px;
-  width: clamp(260px, 32vw, 420px); /* Responsive width */
+  width: clamp(260px, 32vw, 420px);          /* Shrinks proportionally */
 }
 
-/* Buttons inside cards */
 .difficulty-btn {
   background: #4a90e2;
   color: #fff;
@@ -85,38 +84,37 @@ hr {
   display: inline-block;
   color: #fff;
 }
-#difficultyIndicator.easy   { background: #0ddd06; } /* Green for easy */
-#difficultyIndicator.medium { background: #f39c12; } /* Orange for medium */
-#difficultyIndicator.hard   { background: #e74c3c; } /* Red for hard */
+#difficultyIndicator.easy   { background: #0ddd06; } /* Green = Easy */
+#difficultyIndicator.medium { background: #f39c12; } /* Orange = Medium */
+#difficultyIndicator.hard   { background: #e74c3c; } /* Red = Hard */
 
-/* ============================================================
-   ========== GAME CONTAINER (BOARD + KEYPAD) ==========
-   ============================================================ */
+/* =========================================================
+   Game Container
+   - Holds the board + keypad side by side
+   ========================================================= */
 #gameContainer {
   display: flex;
   justify-content: center;
   align-items: flex-start;
-  gap: 40px;                  /* Board <-> Keypad spacing */
+  gap: 40px;
   margin: 8px auto 0;
   max-width: 1600px;
   padding: 0 10px;
-  flex-wrap: nowrap;
+  flex-wrap: nowrap;                         /* No wrapping by default */
 }
-
-/* Prevent board and keypad from shrinking */
 #board, #keypad { flex: 0 0 auto; }
 
-/* ============================================================
-   ========== GAME BOARD (Tiles) ==========
-   ============================================================ */
+/* =========================================================
+   Game Board (grid of tiles)
+   ========================================================= */
 #board {
   display: grid;
-  grid-template-columns: repeat(8, 72px) 240px; /* 8 tiles + 1 result tile */
+  grid-template-columns: repeat(8, 72px) 240px; /* 8 tiles + result tile */
   gap: 8px;
   justify-content: center;
 }
 
-/* Standard tile */
+/* Individual board tile */
 .tile {
   border: 2px solid lightgray;
   width: 72px;
@@ -130,22 +128,22 @@ hr {
   border-radius: 6px;
 }
 
-/* Red tile for invalid/wrong */
+/* Special red tile */
 .red-tile {
   background: #ff4c4c;
   color: #fff;
   border-color: #fff;
 }
 
-/* Wider tile used for equation results */
+/* Wider result tile */
 .result-tile { width: 240px !important; }
 
-/* Tile feedback states (like Wordle colors) */
+/* Wordle-style tile colors */
 .correct { background-color: #6AAA64 !important; color: white !important; border-color: white !important; }
 .present { background-color: #C9B458 !important; color: white !important; border-color: white !important; }
 .absent  { background-color: #787C7E !important; color: white !important; border-color: white !important; }
 
-/* Flip animation on tile reveal */
+/* Flip animation for reveal effect */
 .tile.flip { animation: flip 0.6s ease forwards; }
 @keyframes flip {
   0%   { transform: rotateX(0deg); }
@@ -153,9 +151,9 @@ hr {
   100% { transform: rotateX(0deg); }
 }
 
-/* ============================================================
-   ========== KEYPAD ==========
-   ============================================================ */
+/* =========================================================
+   Keypad (number + operator buttons)
+   ========================================================= */
 #keypad {
   width: 360px;
   display: flex;
@@ -168,25 +166,26 @@ hr {
   box-shadow: 0 4px 10px rgba(0,0,0,0.1);
 }
 
-/* Section headings inside keypad */
 .pad-group h3 { 
   margin: 0 0 6px; 
   font-size: 16px; 
   font-weight: 700; 
 }
 
-/* Grid for buttons */
+/* Keypad grid layout */
 .pad { 
   display: grid; 
   grid-template-columns: repeat(4, 1fr); 
   gap: 8px; 
 }
 
-/* Generic button styles (numbers, operators, actions) */
+/* Buttons (numbers, ops, actions) */
 .choice-btn, .op-btn, .action-btn {
-  width: 100%; height: 44px;
+  width: 100%; 
+  height: 44px;
   padding: 0 10px;
-  font-size: 16px; font-weight: 700;
+  font-size: 16px; 
+  font-weight: 700;
   border: 2px solid #ccc;
   border-radius: 8px;
   background: #f7f7f7;
@@ -194,34 +193,28 @@ hr {
   transition: background .15s ease;
 }
 .choice-btn:hover, .op-btn:hover, .action-btn:hover { background: #eaeaea; }
+.action-btn.primary { background: #4a90e2; color: #fff; border-color: #4a90e2; }
 
-/* Primary action button (e.g., Enter) */
-.action-btn.primary { 
-  background: #4a90e2; 
-  color: #fff; 
-  border-color: #4a90e2; 
-}
-
-/* Layout for bottom action buttons */
+/* Action buttons row */
 .pad-actions { 
   display: grid; 
   grid-template-columns: 1fr 1fr 1fr; 
   gap: 10px; 
 }
 
-/* Color feedback for keypad buttons */
+/* Keypad button states (same colors as board) */
 .choice-btn.correct, .op-btn.correct { background-color: #6aaa64 !important; color: white !important; border-color: #6aaa64 !important; }
 .choice-btn.present, .op-btn.present { background-color: #c9b458 !important; color: white !important; border-color: #c9b458 !important; }
 .choice-btn.absent,  .op-btn.absent  { background-color: #787c7e !important; color: white !important; border-color: #787c7e !important; }
 
-/* Target value + choices display */
+/* Target + Choices + Answer */
 #target, #choices { margin: 6px 0; }
 #target { font-size: 40px; font-weight: bold; }
 #answer { margin-top: 18px; }
 
-/* ============================================================
-   ========== STATS PANEL ==========
-   ============================================================ */
+/* =========================================================
+   Stats Panel (after game results / scoreboard)
+   ========================================================= */
 #stats {
   margin: 24px auto 0;
   max-width: 700px;
@@ -233,21 +226,20 @@ hr {
 
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(3, 1fr); /* 3 equal columns */
   gap: 10px;
 }
 
-/* Individual stat box */
 .stat {
   background: #f7f7f7;
   border: 1px solid #e6e6e6;
   border-radius: 10px;
   padding: 10px;
 }
-.stat span  { display: block; font-size: 12px; color: #666; margin-bottom: 4px; }
+.stat span { display: block; font-size: 12px; color: #666; margin-bottom: 4px; }
 .stat strong { font-size: 24px; }
 
-/* Stats actions row (share, reset, etc.) */
+/* Stats panel buttons */
 .stats-actions {
   margin-top: 12px;
   display: flex;
@@ -255,20 +247,18 @@ hr {
   gap: 10px;
   justify-content: center;
 }
-
-/* Autosave info text */
 .autosave { font-size: 14px; color: #555; }
 
-/* ============================================================
-   ========== RESPONSIVE RULES ==========
-   ============================================================ */
+/* =========================================================
+   Responsive Adjustments
+   ========================================================= */
 @media (max-width: 980px) {
-  /* Stack board and keypad vertically on smaller screens */
-  #gameContainer { flex-wrap: wrap; gap: 20px; }
-
-  /* Expand keypad full width */
+  #gameContainer { 
+    flex-wrap: wrap;  /* Stack board & keypad vertically */
+    gap: 20px; 
+  }
   #keypad, #keypad.hard { width: 100%; }
-
-  /* Dynamic button layout for hard mode keypad */
-  #keypad.hard .pad { grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); }
+  #keypad.hard .pad { 
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); 
+  }
 }
